@@ -53,7 +53,6 @@ public class QuadTree
         bottomRight = new QuadTree(cx + qw, cy - qh, qw, qh, quadVolumne);
         bottomLeft = new QuadTree(cx - qw, cy - qh, qw, qh, quadVolumne);
         topLeft = new QuadTree(cx - qw, cy + qh, qw, qh, quadVolumne);
-        Debug.Log("subdived");
 
     }
 

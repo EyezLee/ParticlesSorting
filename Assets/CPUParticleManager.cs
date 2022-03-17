@@ -35,14 +35,14 @@ public class CPUParticleManager : MonoBehaviour
     {
 
         // initiate particles
-        //for (int i = 0; i < row; i++)
-        //{
-        //    for (int j = 0; j < column; j++)
-        //    {
-        //        var go = Instantiate(prefab, new Vector3(i * ((float)width / row), j * ((float)height / column), 0), Quaternion.identity, transform);
-        //        particles.Add(go);
-        //    }
-        //}
+        for (int i = 0; i < row; i++)
+        {
+            for (int j = 0; j < column; j++)
+            {
+                var go = Instantiate(prefab, new Vector3(i * ((float)width / row), j * ((float)height / column), 0), Quaternion.identity, transform);
+                particles.Add(go);
+            }
+        }
     }
 
     QuadTree quadTree = new QuadTree(1, 1, 1, 1, 4);
@@ -73,7 +73,6 @@ public class CPUParticleManager : MonoBehaviour
             foreach (var p in particles)
             {
                 List<Vector2> neighbors = quadTree.Query(new Vector2(p.transform.position.x, p.transform.position.y), neighborRange, new List<Vector2>());
-                Debug.Log(neighbors.Count);
                 p.GetComponent<Renderer>().material.SetColor("_Color", new Color(neighbors.Count / 5f, 0, 0));
             }
         }
@@ -98,9 +97,9 @@ public class CPUParticleManager : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
-    {
-        //Gizmos.DrawWireCube(Vector3.zero, new Vector3(1, 1, 0));
-        if(quadTree != null) quadTree.DebugQuadTree();
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    //Gizmos.DrawWireCube(Vector3.zero, new Vector3(1, 1, 0));
+    //    if(quadTree != null) quadTree.DebugQuadTree();
+    //}
 }
