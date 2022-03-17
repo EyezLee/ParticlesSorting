@@ -18,7 +18,7 @@ public struct AABB // axis-aligned bounding box
     }
 }
 
-public class QuadTree : MonoBehaviour
+public class QuadTree
 {
     AABB self;
     List<Vector2> particles = new List<Vector2>();
@@ -53,6 +53,7 @@ public class QuadTree : MonoBehaviour
         bottomRight = new QuadTree(cx + qw, cy - qh, qw, qh, quadVolumne);
         bottomLeft = new QuadTree(cx - qw, cy - qh, qw, qh, quadVolumne);
         topLeft = new QuadTree(cx - qw, cy + qh, qw, qh, quadVolumne);
+
     }
 
     public bool Insert(Vector2 particle)
@@ -114,6 +115,20 @@ public class QuadTree : MonoBehaviour
         particlesQuery = topLeft.Query(particle, range, particlesQuery);
 
         return particlesQuery;
+    }
+
+    public void DebugQuadTree()
+    {
+        Gizmos.DrawWireCube(new Vector3(self.centerX, self.centerY, 0), new Vector3(self.halfWidth * 2, self.halfHeight * 2, 0));
+
+        if (topRight != null)
+        {
+            Gizmos.DrawWireCube(new Vector3(topRight.self.centerX, topRight.self.centerY, 0), new Vector3(topRight.self.halfWidth * 2, topRight.self.halfHeight * 2, 0));
+            Gizmos.DrawWireCube(new Vector3(bottomRight.self.centerX, bottomRight.self.centerY, 0), new Vector3(bottomRight.self.halfWidth * 2, bottomRight.self.halfHeight * 2, 0));
+            Gizmos.DrawWireCube(new Vector3(bottomLeft.self.centerX, bottomLeft.self.centerY, 0), new Vector3(bottomLeft.self.halfWidth * 2, bottomLeft.self.halfHeight * 2, 0));
+            Gizmos.DrawWireCube(new Vector3(topLeft.self.centerX, topLeft.self.centerY, 0), new Vector3(topLeft.self.halfWidth * 2, topLeft.self.halfHeight * 2, 0));
+
+        }
     }
 }
 
