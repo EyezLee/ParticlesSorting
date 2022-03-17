@@ -12,7 +12,7 @@ public class ParticleBehavior : MonoBehaviour
             vel.x = -vel.x;
         if (transform.position.y + vel.y > CPUParticleManager.ParticleManager.height || transform.position.y + vel.y < 0)
             vel.y = -vel.y;
-        transform.position += vel;
+        //transform.position += vel;
     }
 
     private void Update()

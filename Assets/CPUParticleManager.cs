@@ -35,14 +35,14 @@ public class CPUParticleManager : MonoBehaviour
     {
 
         // initiate particles
-        for (int i = 0; i < row; i++)
-        {
-            for (int j = 0; j < column; j++)
-            {
-                var go = Instantiate(prefab, new Vector3(i * ((float)width / row), j * ((float)height / column), 0), Quaternion.identity, transform);
-                particles.Add(go);
-            }
-        }
+        //for (int i = 0; i < row; i++)
+        //{
+        //    for (int j = 0; j < column; j++)
+        //    {
+        //        var go = Instantiate(prefab, new Vector3(i * ((float)width / row), j * ((float)height / column), 0), Quaternion.identity, transform);
+        //        particles.Add(go);
+        //    }
+        //}
     }
 
     QuadTree quadTree = new QuadTree(1, 1, 1, 1, 4);
@@ -74,7 +74,7 @@ public class CPUParticleManager : MonoBehaviour
             {
                 List<Vector2> neighbors = quadTree.Query(new Vector2(p.transform.position.x, p.transform.position.y), neighborRange, new List<Vector2>());
                 Debug.Log(neighbors.Count);
-                p.GetComponent<Renderer>().material.SetColor("_Color", new Color(neighbors.Count / 10f, 0, 0));
+                p.GetComponent<Renderer>().material.SetColor("_Color", new Color(neighbors.Count / 5f, 0, 0));
             }
         }
         // --------------CPU robust neighbor searching-----------------------
@@ -85,15 +85,15 @@ public class CPUParticleManager : MonoBehaviour
             {
                 int count = 0;
                 var self = particles[i];
-                for (int j = 0; j < particles.Count && j != i; j++)
+                for (int j = 0; j < particles.Count; j++)
                 {
                     float dist = Vector3.Distance(self.transform.position, particles[j].transform.position);
-                    if (dist <= neighborRange)
+                    if (dist <= neighborRange && j != i)
                     {
                         count++;
                     }
                 }
-                self.GetComponent<Renderer>().material.SetColor("_Color", new Color(count / 10f, 0, 0));
+                self.GetComponent<Renderer>().material.SetColor("_Color", new Color(count / 5f, 0, 0));
             }
         }
     }
