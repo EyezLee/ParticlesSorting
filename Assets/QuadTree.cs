@@ -53,6 +53,7 @@ public class QuadTree
         bottomRight = new QuadTree(cx + qw, cy - qh, qw, qh, quadVolumne);
         bottomLeft = new QuadTree(cx - qw, cy - qh, qw, qh, quadVolumne);
         topLeft = new QuadTree(cx - qw, cy + qh, qw, qh, quadVolumne);
+        Debug.Log("subdived");
 
     }
 
@@ -85,10 +86,17 @@ public class QuadTree
 
     bool Intersect(Vector2 particle, float range)
     {
-        return !(particle.x - range > self.centerX + self.halfWidth ||
-                particle.x + range < self.centerX - self.halfWidth ||
-                particle.y - range > self.centerY + self.halfHeight ||
-                particle.y + range < self.centerY - self.halfHeight);
+        float left = self.centerX - self.halfWidth;
+        float right = self.centerX + self.halfWidth;
+        float top = self.centerY + self.halfHeight;
+        float bottom = self.centerY - self.halfHeight;
+
+        float nearX = Mathf.Max(left, Mathf.Min(particle.x, right));
+        float nearY = Mathf.Max(bottom, Mathf.Min(particle.y, top));
+
+        float distX = nearX - particle.x;
+        float distY = nearY - particle.y;
+        return distX * distX + distY * distY <= range * range;
     }
 
     public List<Vector2> Query(Vector2 particle, float range, List<Vector2> particlesQuery)
@@ -99,7 +107,7 @@ public class QuadTree
         // if intersect, check every particle in this quad
         foreach (var p in particles)
         {
-            if (Vector2.Distance(p, particle) <= range)
+            if (Vector2.Distance(p, particle) <= range && !(p.x == particle.x && p.y == particle.y))
             {
                 particlesQuery.Add(p);
             }
@@ -123,11 +131,10 @@ public class QuadTree
 
         if (topRight != null)
         {
-            Gizmos.DrawWireCube(new Vector3(topRight.self.centerX, topRight.self.centerY, 0), new Vector3(topRight.self.halfWidth * 2, topRight.self.halfHeight * 2, 0));
-            Gizmos.DrawWireCube(new Vector3(bottomRight.self.centerX, bottomRight.self.centerY, 0), new Vector3(bottomRight.self.halfWidth * 2, bottomRight.self.halfHeight * 2, 0));
-            Gizmos.DrawWireCube(new Vector3(bottomLeft.self.centerX, bottomLeft.self.centerY, 0), new Vector3(bottomLeft.self.halfWidth * 2, bottomLeft.self.halfHeight * 2, 0));
-            Gizmos.DrawWireCube(new Vector3(topLeft.self.centerX, topLeft.self.centerY, 0), new Vector3(topLeft.self.halfWidth * 2, topLeft.self.halfHeight * 2, 0));
-
+            topRight.DebugQuadTree();
+            bottomRight.DebugQuadTree();
+            bottomLeft.DebugQuadTree();
+            topLeft.DebugQuadTree();
         }
     }
 }
