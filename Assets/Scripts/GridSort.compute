@@ -1,0 +1,38 @@
+#pragma kernel Initialize
+#pragma kernel Update
+
+int _BoundaryXMin;
+int _BoundaryXMax;
+int _BoundaryYMin;
+int _BoundaryYMax;
+int _CellNumX;
+int _CellNumY;
+
+struct Particle
+{
+    float3 position;
+    float3 color;
+};
+
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+
+[numthreads(8,1,1)]
+void Initialize(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = _ParticleBuffer[id.x];
+    float spacingX = (_BoundaryXMax - _BoundaryXMin) / _CellNumX;
+    float spacingY = (_BoundaryYMax - _BoundaryYMin) / _CellNumY;
+
+    float posX = (id.x % _CellNumX) * spacingX;
+    float posY = floor(id.x / _CellNumX) * spacingY; 
+    p.position = float3(posX, posY, 0);
+    p.color = float3(1, 0, 0);
+    _ParticleBuffer[id.x] = p;
+}
+
+[numthreads(8, 1, 1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+
+}
