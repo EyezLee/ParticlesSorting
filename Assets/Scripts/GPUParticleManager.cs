@@ -71,16 +71,33 @@ public class GPUParticleManager : MonoBehaviour
     private void OnDisable()
     {
         if(particleBuffer!=null)particleBuffer.Release();
+        if(indirectArgsBuffer!=null)indirectArgsBuffer.Release();
     }
 
     private void OnEnable()
     {
         if (particleBuffer != null) particleBuffer.Release();
+        if (indirectArgsBuffer != null) indirectArgsBuffer.Release();
     }
 
     private void OnDestroy()
     {
         if (particleBuffer != null) particleBuffer.Release();
+        if (indirectArgsBuffer != null) indirectArgsBuffer.Release();
+
+    }
+
+    private void OnDrawGizmos()
+    {
+        for (int i = 0; i < cellNumX; i++)
+        {
+            for(int j = 0; j < cellNumY; j++)
+            {
+                float width = (boundaryXMax - boundaryXMin) / cellNumX;
+                float height = (boundaryYMax - boundaryYMin) / cellNumY;
+                Gizmos.DrawWireCube(new Vector3(i * width + width / 2f, j * height + height / 2f, 0), new Vector3(width, height, 0));
+            }
+        }
 
     }
 }
