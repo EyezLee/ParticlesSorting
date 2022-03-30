@@ -23,6 +23,7 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] int particleNum = 8;
     [SerializeField] Mesh prefab;
     [SerializeField] Shader shader;
+    [SerializeField] GameObject target;
 
 
     ComputeBuffer particleBuffer;
@@ -59,9 +60,14 @@ public class GPUParticleManager : MonoBehaviour
     // update
     private void Update()
     {
-        // update dispatch
 
-        // change color
+        // update dispatch
+        updateKernel = cs.FindKernel("Update");
+        cs.SetFloat("_MouseInWorldX", target.transform.position.x);
+        cs.SetFloat("_MouseInWorldY", target.transform.position.y);
+        cs.SetBuffer(updateKernel, "_ParticleBuffer", particleBuffer);
+        cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
+
 
         // draw instances
         Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
@@ -95,7 +101,7 @@ public class GPUParticleManager : MonoBehaviour
             {
                 float width = (boundaryXMax - boundaryXMin) / cellNumX;
                 float height = (boundaryYMax - boundaryYMin) / cellNumY;
-                Gizmos.DrawWireCube(new Vector3(i * width + width / 2f, j * height + height / 2f, 0), new Vector3(width, height, 0));
+                Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, 0), new Vector3(width, height, 0));
             }
         }
 

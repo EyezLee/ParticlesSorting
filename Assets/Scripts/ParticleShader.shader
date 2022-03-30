@@ -46,7 +46,7 @@ Shader "Unlit/ParticleShader"
             v2f vert (uint idx : SV_InstanceID, appdata v)
             {
                 v2f o;
-                o.vertex = UnityObjectToClipPos(v.vertex * 0.1f + float4(_ParticleBuffer[idx].position, 1));
+                o.vertex = UnityObjectToClipPos(v.vertex * 0.25f + float4(_ParticleBuffer[idx].position, 1));
                 o.color = float4(_ParticleBuffer[idx].color, 1);
                 //o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 //UNITY_TRANSFER_FOG(o,o.vertex);

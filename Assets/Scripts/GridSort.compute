@@ -7,6 +7,8 @@ int _BoundaryYMin;
 int _BoundaryYMax;
 int _CellNumX;
 int _CellNumY;
+float _MouseInWorldX;
+float _MouseInWorldY;
 
 struct Particle
 {
@@ -24,15 +26,21 @@ void Initialize(uint3 id : SV_DispatchThreadID)
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / _CellNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / _CellNumY;
 
-    float posX = (id.x % _CellNumX) * spacingX;
-    float posY = floor(id.x / _CellNumX) * spacingY; 
+    float posX = (id.x % _CellNumX) * spacingX + spacingX * 0.5f;
+    float posY = floor(id.x / _CellNumX) * spacingY + spacingY * 0.5f; 
     p.position = float3(posX, posY, 0);
-    p.color = float3(1, 0, 0);
+    p.color = float3(0, 1, 0);
     _ParticleBuffer[id.x] = p;
 }
 
 [numthreads(8, 1, 1)]
 void Update(uint3 id : SV_DispatchThreadID)
 {
-
+    Particle p = _ParticleBuffer[id.x];
+    if (length(float2(p.position.x, p.position.y) - float2(_MouseInWorldX, _MouseInWorldY)) < 0.75f)
+    {
+        p.color = float3(1, 0, 0);
+    }
+    else p.color = float3(0, 1, 0);
+    _ParticleBuffer[id.x] = p;
 }
