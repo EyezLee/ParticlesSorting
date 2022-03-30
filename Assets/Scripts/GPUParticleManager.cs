@@ -21,19 +21,39 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] int cellNumY;
 
     [SerializeField] int particleNum = 8;
+    [SerializeField] Mesh prefab;
+    [SerializeField] Shader shader;
 
 
     ComputeBuffer particleBuffer;
     int initializeKernel, updateKernel;
+    ComputeBuffer indirectArgsBuffer;
 
     int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 8.0f); } }
+    Material material;
 
     // initialize
     private void Start()
     {
         initializeKernel = cs.FindKernel("Initialize");
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        cs.SetInt("_BoundaryXMin", boundaryXMin);
+        cs.SetInt("_BoundaryXMax", boundaryXMax);
+        cs.SetInt("_BoundaryYMin", boundaryYMin);
+        cs.SetInt("_BoundaryYMax", boundaryYMax);
+        cs.SetInt("_CellNumX", cellNumX);
+        cs.SetInt("_CellNumY", cellNumY);
+        cs.SetBuffer(initializeKernel, "_ParticleBuffer", particleBuffer);
+        cs.Dispatch(initializeKernel, particleDispatchGroupX, 1, 1);
 
+        // indirect draw arg buffer
+        indirectArgsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        indirectArgsBuffer.SetData(new uint[5]
+        {
+            prefab.GetIndexCount(0), (uint)particleNum, 0, 0, 0
+        });
+        material = new Material(shader);
+        material.SetBuffer("_ParticleBuffer", particleBuffer);
     }
 
     // update
@@ -44,6 +64,7 @@ public class GPUParticleManager : MonoBehaviour
         // change color
 
         // draw instances
+        Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
     }
 
 

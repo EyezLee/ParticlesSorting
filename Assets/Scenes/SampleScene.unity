@@ -310,13 +310,14 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1154100722}
+  - component: {fileID: 1154100723}
   m_Layer: 0
   m_Name: GPUGridBasedParticle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1154100722
 Transform:
   m_ObjectHideFlags: 0
@@ -332,6 +333,28 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1154100723
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154100721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e76e9f003abe2464fac227ca8437150d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  cs: {fileID: 7200000, guid: 8d30edd8fbeb17141beda8aa132fc4c5, type: 3}
+  boundaryXMin: 0
+  boundaryXMax: 5
+  boundaryYMin: 0
+  boundaryYMax: 5
+  cellNumX: 4
+  cellNumY: 4
+  particleNum: 8
+  prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+  shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0
