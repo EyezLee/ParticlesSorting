@@ -99,8 +99,8 @@ public class GPUParticleManager : MonoBehaviour
         {
             for(int j = 0; j < cellNumY; j++)
             {
-                float width = (boundaryXMax - boundaryXMin) / cellNumX;
-                float height = (boundaryYMax - boundaryYMin) / cellNumY;
+                float width = (boundaryXMax - boundaryXMin) / (float)cellNumX;
+                float height = (boundaryYMax - boundaryYMin) / (float)cellNumY;
                 Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, 0), new Vector3(width, height, 0));
             }
         }

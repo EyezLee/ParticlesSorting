@@ -19,15 +19,22 @@ struct Particle
 RWStructuredBuffer<Particle> _ParticleBuffer;
 
 
+float random(float2 uv)
+{
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
 [numthreads(8,1,1)]
 void Initialize(uint3 id : SV_DispatchThreadID)
 {
     Particle p = _ParticleBuffer[id.x];
-    float spacingX = (_BoundaryXMax - _BoundaryXMin) / _CellNumX;
-    float spacingY = (_BoundaryYMax - _BoundaryYMin) / _CellNumY;
+    float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_CellNumX;
+    float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_CellNumY;
 
-    float posX = (id.x % _CellNumX) * spacingX + spacingX * 0.5f;
-    float posY = floor(id.x / _CellNumX) * spacingY + spacingY * 0.5f; 
+   /* float posX = (id.x % _CellNumX) * spacingX + spacingX * 0.5f;
+    float posY = floor(id.x / _CellNumX) * spacingY + spacingY * 0.5f; */
+    float posX = _BoundaryXMin + random(float2(id.x, id.x % _CellNumX)) * (_BoundaryXMax - _BoundaryXMin);
+    float posY = _BoundaryYMin + random(float2(id.x / _CellNumY, id.x)) * (_BoundaryYMax - _BoundaryYMin);
     p.position = float3(posX, posY, 0);
     p.color = float3(0, 1, 0);
     _ParticleBuffer[id.x] = p;
@@ -44,3 +51,5 @@ void Update(uint3 id : SV_DispatchThreadID)
     else p.color = float3(0, 1, 0);
     _ParticleBuffer[id.x] = p;
 }
+
+
