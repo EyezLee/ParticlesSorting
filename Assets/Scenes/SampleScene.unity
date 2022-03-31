@@ -294,7 +294,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.22, y: 1, z: -12.94}
+  m_LocalPosition: {x: 6.8, y: 5.5, z: -12.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -350,8 +350,8 @@ MonoBehaviour:
   boundaryXMax: 8
   boundaryYMin: 0
   boundaryYMax: 8
-  cellNumX: 5
-  cellNumY: 5
+  cellNumX: 3
+  cellNumY: 3
   particleNum: 25
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}

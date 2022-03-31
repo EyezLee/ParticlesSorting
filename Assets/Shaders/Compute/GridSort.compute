@@ -1,0 +1,86 @@
+#pragma kernel Initialize
+#pragma kernel Update
+#pragma kernel MakeParticleGridPair
+#pragma kernel Debug
+
+#define BITONIC_BLOCK_SIZE 512
+#define TRANSPOSE_BLOCK_SIZE 16
+
+#include "../cginc/GridUtility.cginc"
+
+int _BoundaryXMin;
+int _BoundaryXMax;
+int _BoundaryYMin;
+int _BoundaryYMax;
+int _GridNumX;
+int _GridNumY;
+float _TargetInWorldX;
+float _TargetInWorldY;
+
+struct Particle
+{
+    float3 position;
+    float3 color;
+};
+RWStructuredBuffer<Particle> _ParticleBuffer;
+
+RWStructuredBuffer<uint2> _ParticleGridPair;
+
+
+float random(float2 uv)
+{
+    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
+}
+
+[numthreads(8,1,1)]
+void Initialize(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = _ParticleBuffer[id.x];
+    float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
+    float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
+
+   /* float posX = (id.x % _GridNumX) * spacingX + spacingX * 0.5f;
+    float posY = floor(id.x / _GridNumX) * spacingY + spacingY * 0.5f; */
+    float posX = _BoundaryXMin + random(float2(id.x, id.x % _GridNumX)) * (_BoundaryXMax - _BoundaryXMin);
+    float posY = _BoundaryYMin + random(float2(id.x / _GridNumY, id.x)) * (_BoundaryYMax - _BoundaryYMin);
+    p.position = float3(posX, posY, 0);
+    p.color = float3(0, 1, 0);
+    _ParticleBuffer[id.x] = p;
+}
+
+[numthreads(8, 1, 1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = _ParticleBuffer[id.x];
+    if (length(float2(p.position.x, p.position.y) - float2(_TargetInWorldX, _TargetInWorldY)) < 0.75f)
+    {
+        p.color = float3(1, 0, 0);
+    }
+    else p.color = float3(0, 1, 0);
+    _ParticleBuffer[id.x] = p;
+}
+
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
+void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = _ParticleBuffer[id.x];
+    float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
+    float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
+    uint2 grid = PositionToGrid(p.position, float2(spacingX, spacingY));
+    uint gridID = GridToGridID(grid, _GridNumX);
+    _ParticleGridPair[id.x] = uint2(gridID, id.x);
+}
+
+[numthreads(8, 1, 1)]
+void Debug(uint3 id : SV_DispatchThreadID)
+{
+    Particle p = _ParticleBuffer[id.x];
+
+    // assign grid id to particle color
+    uint gridID = _ParticleGridPair[id.x].x;
+    uint2 grid = GridIDToGrid(gridID, _GridNumX);
+    p.color = float3(grid.x/(float)_GridNumX, grid.y/(float)_GridNumY, 0);
+
+    _ParticleBuffer[id.x] = p;
+}
+

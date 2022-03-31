@@ -17,8 +17,8 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] int boundaryYMin;
     [SerializeField] int boundaryYMax;
 
-    [SerializeField] int cellNumX;
-    [SerializeField] int cellNumY;
+    [SerializeField] int gridNumX;
+    [SerializeField] int gridNumY;
 
     [SerializeField] int particleNum = 8;
     [SerializeField] Mesh prefab;
@@ -28,7 +28,9 @@ public class GPUParticleManager : MonoBehaviour
 
     ComputeBuffer particleBuffer;
     int initializeKernel, updateKernel;
+    int particleGridPairKernel, debugKernel;
     ComputeBuffer indirectArgsBuffer;
+    ComputeBuffer particleGridPairBuffer;
 
     int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 8.0f); } }
     Material material;
@@ -38,12 +40,13 @@ public class GPUParticleManager : MonoBehaviour
     {
         initializeKernel = cs.FindKernel("Initialize");
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(Vector2)));
         cs.SetInt("_BoundaryXMin", boundaryXMin);
         cs.SetInt("_BoundaryXMax", boundaryXMax);
         cs.SetInt("_BoundaryYMin", boundaryYMin);
         cs.SetInt("_BoundaryYMax", boundaryYMax);
-        cs.SetInt("_CellNumX", cellNumX);
-        cs.SetInt("_CellNumY", cellNumY);
+        cs.SetInt("_GridNumX", gridNumX);
+        cs.SetInt("_GridNumY", gridNumY);
         cs.SetBuffer(initializeKernel, "_ParticleBuffer", particleBuffer);
         cs.Dispatch(initializeKernel, particleDispatchGroupX, 1, 1);
 
@@ -60,13 +63,32 @@ public class GPUParticleManager : MonoBehaviour
     // update
     private void Update()
     {
+        // make <particle, gridID> pair
+        particleGridPairKernel = cs.FindKernel("MakeParticleGridPair");
+        cs.SetInt("_BoundaryXMin", boundaryXMin);
+        cs.SetInt("_BoundaryXMax", boundaryXMax);
+        cs.SetInt("_BoundaryYMin", boundaryYMin);
+        cs.SetInt("_BoundaryYMax", boundaryYMax);
+        cs.SetInt("_GridNumX", gridNumX);
+        cs.SetInt("_GridNumY", gridNumY);
+        cs.SetBuffer(particleGridPairKernel, "_ParticleBuffer", particleBuffer);
+        cs.SetBuffer(particleGridPairKernel, "_ParticleGridPair", particleGridPairBuffer);
+        cs.Dispatch(particleGridPairKernel, particleDispatchGroupX, 1, 1);
+
+        // debug dispatch
+        debugKernel = cs.FindKernel("Debug");
+        cs.SetInt("_GridNumX", gridNumX);
+        cs.SetInt("_GridNumY", gridNumY);
+        cs.SetBuffer(debugKernel, "_ParticleBuffer", particleBuffer);
+        cs.SetBuffer(debugKernel, "_ParticleGridPair", particleGridPairBuffer);
+        cs.Dispatch(debugKernel, particleDispatchGroupX, 1, 1);
 
         // update dispatch
         updateKernel = cs.FindKernel("Update");
         cs.SetFloat("_MouseInWorldX", target.transform.position.x);
         cs.SetFloat("_MouseInWorldY", target.transform.position.y);
         cs.SetBuffer(updateKernel, "_ParticleBuffer", particleBuffer);
-        cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
+        //cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
 
 
         // draw instances
@@ -95,16 +117,15 @@ public class GPUParticleManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        for (int i = 0; i < cellNumX; i++)
+        for (int i = 0; i < gridNumX; i++)
         {
-            for(int j = 0; j < cellNumY; j++)
+            for(int j = 0; j < gridNumY; j++)
             {
-                float width = (boundaryXMax - boundaryXMin) / (float)cellNumX;
-                float height = (boundaryYMax - boundaryYMin) / (float)cellNumY;
+                float width = (boundaryXMax - boundaryXMin) / (float)gridNumX;
+                float height = (boundaryYMax - boundaryYMin) / (float)gridNumY;
                 Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, 0), new Vector3(width, height, 0));
             }
         }
-
     }
 }
 
