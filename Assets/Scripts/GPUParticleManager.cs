@@ -35,6 +35,8 @@ public class GPUParticleManager : MonoBehaviour
     int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 8.0f); } }
     Material material;
 
+    BitonicSort bitonicSort;
+
     // initialize
     private void Start()
     {
@@ -58,6 +60,8 @@ public class GPUParticleManager : MonoBehaviour
         });
         material = new Material(shader);
         material.SetBuffer("_ParticleBuffer", particleBuffer);
+
+        bitonicSort = GetComponent<BitonicSort>();
     }
 
     // update
@@ -74,6 +78,10 @@ public class GPUParticleManager : MonoBehaviour
         cs.SetBuffer(particleGridPairKernel, "_ParticleBuffer", particleBuffer);
         cs.SetBuffer(particleGridPairKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.Dispatch(particleGridPairKernel, particleDispatchGroupX, 1, 1);
+
+        // sort 
+        bitonicSort.Sort(particleGridPairBuffer);
+
 
         // debug dispatch
         debugKernel = cs.FindKernel("Debug");

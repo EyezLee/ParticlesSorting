@@ -253,7 +253,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -311,6 +311,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1154100722}
   - component: {fileID: 1154100723}
+  - component: {fileID: 1154100724}
   m_Layer: 0
   m_Name: GPUGridBasedParticle
   m_TagString: Untagged
@@ -350,12 +351,25 @@ MonoBehaviour:
   boundaryXMax: 8
   boundaryYMin: 0
   boundaryYMax: 8
-  cellNumX: 3
-  cellNumY: 3
+  gridNumX: 5
+  gridNumY: 7
   particleNum: 25
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   target: {fileID: 1781676427}
+--- !u!114 &1154100724
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1154100721}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8362be473f1965e43b8cbf11724f41fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BitonicCS: {fileID: 7200000, guid: 7ee24ec2b4f03b249bbc58f5c441edf3, type: 3}
 --- !u!1 &1781676427
 GameObject:
   m_ObjectHideFlags: 0
