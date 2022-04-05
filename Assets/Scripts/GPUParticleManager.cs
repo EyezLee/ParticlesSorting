@@ -24,6 +24,8 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] Mesh prefab;
     [SerializeField] Shader shader;
     [SerializeField] GameObject target;
+    [SerializeField] int targetIndex = 0;
+    [SerializeField] [Range(0, 1)] float range = 0.5f;
 
 
     ComputeBuffer particleBuffer, particleRearrangedBuffer;
@@ -31,6 +33,7 @@ public class GPUParticleManager : MonoBehaviour
     int particleGridPairKernel, debugKernel;
     ComputeBuffer indirectArgsBuffer;
     ComputeBuffer particleGridPairBuffer;
+    ComputeBuffer gridTableBuffer;
 
     int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 8.0f); } }
     Material material;
@@ -44,6 +47,7 @@ public class GPUParticleManager : MonoBehaviour
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
         particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
         particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(Vector2)));
+        gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY, Marshal.SizeOf(typeof(Vector2)));
         cs.SetInt("_BoundaryXMin", boundaryXMin);
         cs.SetInt("_BoundaryXMax", boundaryXMax);
         cs.SetInt("_BoundaryYMin", boundaryYMin);
@@ -83,6 +87,17 @@ public class GPUParticleManager : MonoBehaviour
         // sort 
         bitonicSort.Sort(particleGridPairBuffer);
 
+        // clean grid look up table
+        int resetGridTableKernel = cs.FindKernel("ResetGridLookUpTable");
+        cs.SetBuffer(resetGridTableKernel, "_GridTable", gridTableBuffer);
+        cs.Dispatch(resetGridTableKernel, Mathf.CeilToInt(gridNumX / 8.0f), Mathf.CeilToInt(gridNumY / 8.0f), 1);
+        // build grid look up table
+        int makeGridTableKernel = cs.FindKernel("MakeGridLookUpTable");
+        cs.SetFloat("_ParticleNum", particleNum);
+        cs.SetBuffer(makeGridTableKernel, "_ParticleGridPair", particleGridPairBuffer);
+        cs.SetBuffer(makeGridTableKernel, "_GridTable", gridTableBuffer);
+        cs.Dispatch(makeGridTableKernel, particleDispatchGroupX, 1, 1);
+
         // rearrange particles
         int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
         cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
@@ -92,7 +107,6 @@ public class GPUParticleManager : MonoBehaviour
 
         // swap buffer
         (particleBuffer, particleRearrangedBuffer) = (particleRearrangedBuffer, particleBuffer);
-
 
         // debug dispatch
         debugKernel = cs.FindKernel("Debug");
@@ -104,10 +118,16 @@ public class GPUParticleManager : MonoBehaviour
 
         // update dispatch
         updateKernel = cs.FindKernel("Update");
-        cs.SetFloat("_MouseInWorldX", target.transform.position.x);
-        cs.SetFloat("_MouseInWorldY", target.transform.position.y);
+        cs.SetInt("_BoundaryXMin", boundaryXMin);
+        cs.SetInt("_BoundaryXMax", boundaryXMax);
+        cs.SetInt("_BoundaryYMin", boundaryYMin);
+        cs.SetInt("_BoundaryYMax", boundaryYMax);
+        cs.SetInt("_GridNumX", gridNumX);
+        cs.SetInt("_GridNumY", gridNumY);
+        cs.SetInt("_TargetIndex", targetIndex);
+        cs.SetBuffer(updateKernel, "_GridTable", gridTableBuffer);
         cs.SetBuffer(updateKernel, "_ParticleBuffer", particleBuffer);
-        //cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
+        cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
 
 
         // draw instances
@@ -121,6 +141,7 @@ public class GPUParticleManager : MonoBehaviour
         indirectArgsBuffer?.Release();
         particleGridPairBuffer?.Release();
         particleRearrangedBuffer?.Release();
+        gridTableBuffer?.Release();
     }
 
     private void OnEnable()
@@ -129,6 +150,8 @@ public class GPUParticleManager : MonoBehaviour
         indirectArgsBuffer?.Release();
         particleGridPairBuffer?.Release();
         particleRearrangedBuffer?.Release();
+        gridTableBuffer?.Release();
+
     }
 
     private void OnDestroy()
@@ -137,6 +160,8 @@ public class GPUParticleManager : MonoBehaviour
         indirectArgsBuffer?.Release();
         particleGridPairBuffer?.Release();
         particleRearrangedBuffer?.Release();
+        gridTableBuffer?.Release();
+
     }
 
     private void OnDrawGizmos()
