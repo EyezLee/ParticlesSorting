@@ -2,6 +2,7 @@
 #pragma kernel Update
 #pragma kernel MakeParticleGridPair
 #pragma kernel Debug
+#pragma kernel RearrangeParticle
 
 #define BITONIC_BLOCK_SIZE 512
 #define TRANSPOSE_BLOCK_SIZE 16
@@ -23,6 +24,7 @@ struct Particle
     float3 color;
 };
 RWStructuredBuffer<Particle> _ParticleBuffer;
+StructuredBuffer<Particle> _ReadParticleBuffer;
 
 RWStructuredBuffer<uint2> _ParticleGridPair;
 
@@ -69,6 +71,13 @@ void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
     uint2 grid = PositionToGrid(p.position, float2(spacingX, spacingY));
     uint gridID = GridToGridID(grid, _GridNumX);
     _ParticleGridPair[id.x] = uint2(gridID, id.x);
+}
+
+[numthreads(8, 1, 1)]
+void RearrangeParticle(uint3 id : SV_DispatchThreadID)
+{
+    int newID = _ParticleGridPair[id.x].y;
+    _ParticleBuffer[id.x] = _ReadParticleBuffer[newID];
 }
 
 [numthreads(8, 1, 1)]

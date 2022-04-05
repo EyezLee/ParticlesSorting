@@ -348,12 +348,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cs: {fileID: 7200000, guid: 8d30edd8fbeb17141beda8aa132fc4c5, type: 3}
   boundaryXMin: 0
-  boundaryXMax: 8
+  boundaryXMax: 10
   boundaryYMin: 0
-  boundaryYMax: 8
-  gridNumX: 5
-  gridNumY: 7
-  particleNum: 25
+  boundaryYMax: 10
+  gridNumX: 4
+  gridNumY: 4
+  particleNum: 512
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   target: {fileID: 1781676427}

@@ -26,7 +26,7 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] GameObject target;
 
 
-    ComputeBuffer particleBuffer;
+    ComputeBuffer particleBuffer, particleRearrangedBuffer;
     int initializeKernel, updateKernel;
     int particleGridPairKernel, debugKernel;
     ComputeBuffer indirectArgsBuffer;
@@ -42,6 +42,7 @@ public class GPUParticleManager : MonoBehaviour
     {
         initializeKernel = cs.FindKernel("Initialize");
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
         particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(Vector2)));
         cs.SetInt("_BoundaryXMin", boundaryXMin);
         cs.SetInt("_BoundaryXMax", boundaryXMax);
@@ -82,6 +83,16 @@ public class GPUParticleManager : MonoBehaviour
         // sort 
         bitonicSort.Sort(particleGridPairBuffer);
 
+        // rearrange particles
+        int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
+        cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
+        cs.SetBuffer(rearrangeParticleKernel, "_ReadParticleBuffer", particleBuffer);
+        cs.SetBuffer(rearrangeParticleKernel, "_ParticleBuffer", particleRearrangedBuffer);
+        cs.Dispatch(rearrangeParticleKernel, particleDispatchGroupX, 1, 1);
+
+        // swap buffer
+        (particleBuffer, particleRearrangedBuffer) = (particleRearrangedBuffer, particleBuffer);
+
 
         // debug dispatch
         debugKernel = cs.FindKernel("Debug");
@@ -106,21 +117,26 @@ public class GPUParticleManager : MonoBehaviour
 
     private void OnDisable()
     {
-        if(particleBuffer!=null)particleBuffer.Release();
-        if(indirectArgsBuffer!=null)indirectArgsBuffer.Release();
+        particleBuffer?.Release();
+        indirectArgsBuffer?.Release();
+        particleGridPairBuffer?.Release();
+        particleRearrangedBuffer?.Release();
     }
 
     private void OnEnable()
     {
-        if (particleBuffer != null) particleBuffer.Release();
-        if (indirectArgsBuffer != null) indirectArgsBuffer.Release();
+        particleBuffer?.Release();
+        indirectArgsBuffer?.Release();
+        particleGridPairBuffer?.Release();
+        particleRearrangedBuffer?.Release();
     }
 
     private void OnDestroy()
     {
-        if (particleBuffer != null) particleBuffer.Release();
-        if (indirectArgsBuffer != null) indirectArgsBuffer.Release();
-
+        particleBuffer?.Release();
+        indirectArgsBuffer?.Release();
+        particleGridPairBuffer?.Release();
+        particleRearrangedBuffer?.Release();
     }
 
     private void OnDrawGizmos()
