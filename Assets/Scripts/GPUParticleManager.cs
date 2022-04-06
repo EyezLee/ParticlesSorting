@@ -125,6 +125,7 @@ public class GPUParticleManager : MonoBehaviour
         cs.SetInt("_GridNumX", gridNumX);
         cs.SetInt("_GridNumY", gridNumY);
         cs.SetInt("_TargetIndex", targetIndex);
+        cs.SetInt("_ParticleNum", particleNum);
         cs.SetBuffer(updateKernel, "_GridTable", gridTableBuffer);
         cs.SetBuffer(updateKernel, "_ParticleBuffer", particleBuffer);
         cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);

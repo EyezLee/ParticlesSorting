@@ -64,36 +64,32 @@ void Update(uint3 id : SV_DispatchThreadID)
 
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
-    float3 pos = _ParticleBuffer[targetIdx].position;
-    uint2 grid = PositionToGrid(pos, float2(spacingX, spacingY));
+    float3 pos = _ParticleBuffer[id.x].position;
+    int2 grid = (int2)PositionToGrid(pos, float2(spacingX, spacingY));
 
-    int gid = GridToGridID(grid, _GridNumX);
-    int start = _GridTable[gid].x;
-    int end = _GridTable[gid].y;
+    for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
+    {
+        for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
+        {
+            int gid = GridToGridID(uint2(x, y), _GridNumX);
+            int start = _GridTable[gid].x;
+            int end = _GridTable[gid].y;
+           /* for (int i = start; i <= end; i++)
+                _ParticleBuffer[i].color = float3(0, 0, 1);*/
 
-    for (int i = start; i <= end; i++)
-        _ParticleBuffer[i].color = float3(0, 0, 1);
 
-    //for (int y = max(0, grid.y - 1); y <= min(grid.y + 1, _GridNumY - 1); y++)
-    //{
-    //    for (int x = max(0, grid.x - 1); x <= min(grid.x + 1, _GridNumX - 1); x++)
-    //    {
-    //        int gid = GridToGridID(uint2(x, y), _GridNumX);
-    //        int start = _GridTable[gid].x;
-    //        int end = _GridTable[gid].y;
-    //        
-    //        if (gid == GridToGridID(grid, _GridNumX))
-    //        {
-    //            for (int i = start; i <= end; i++)
-    //                _ParticleBuffer[i].color = float3(1, 0, 0);
-    //        }
-    //        else 
-    //        {
-    //            for (int i = start; i <= end; i++)
-    //                _ParticleBuffer[i].color = float3(0, 0, 1);
-    //        }
-    //    }
-    //}
+            if (gid == GridToGridID(grid, _GridNumX))
+            {
+                for (int i = start; i <= end; i++)
+                    _ParticleBuffer[i].color = float3(0, 0, 1);
+            }
+            else 
+            {
+                for (int i = start; i <= end; i++)
+                    _ParticleBuffer[i].color = float3(1, 0, 0);
+            }
+        }
+    }
 }
 
 [numthreads(8, 1, 1)]
