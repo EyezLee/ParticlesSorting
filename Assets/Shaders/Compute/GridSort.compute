@@ -6,8 +6,8 @@
 #pragma kernel MakeGridLookUpTable
 #pragma kernel ResetGridLookUpTable
 
-#define BITONIC_BLOCK_SIZE 64
-#define TRANSPOSE_BLOCK_SIZE 2
+#define BITONIC_BLOCK_SIZE 512
+#define TRANSPOSE_BLOCK_SIZE 16
 
 #include "../cginc/GridUtility.cginc"
 
@@ -89,7 +89,8 @@ void Update(uint3 id : SV_DispatchThreadID)
             {
                 Particle p = _ParticleBuffer[i];
                 if (length(p.position.xy - pos.xy) <= _Range)
-                    if(id.x == i)    _ParticleBuffer[i].color = float3(0, 1, 0);
+                    if(id.x == i)    
+                        _ParticleBuffer[i].color = float3(0, 1, 0);
                     else
                         _ParticleBuffer[i].color = float3(0, 0, 1);
             }

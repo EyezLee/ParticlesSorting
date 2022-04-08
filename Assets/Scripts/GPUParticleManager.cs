@@ -35,7 +35,7 @@ public class GPUParticleManager : MonoBehaviour
     ComputeBuffer particleGridPairBuffer;
     ComputeBuffer gridTableBuffer;
 
-    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 64); } }
+    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 512.0f); } }
     Material material;
 
     BitonicSort bitonicSort;

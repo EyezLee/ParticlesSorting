@@ -7,8 +7,8 @@ public class BitonicSort : MonoBehaviour
     // The number of elements to sort is limited to an even power of 2
     // At minimum 8,192 elements - BITONIC_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE
     // At maximum 262,144 elements - BITONIC_BLOCK_SIZE * BITONIC_BLOCK_SIZE
-    protected static readonly uint BITONIC_BLOCK_SIZE = 64;
-    protected static readonly uint TRANSPOSE_BLOCK_SIZE = 2;
+    protected static readonly uint BITONIC_BLOCK_SIZE = 512;
+    protected static readonly uint TRANSPOSE_BLOCK_SIZE = 16;
 
     [SerializeField] protected ComputeShader BitonicCS;
     protected ComputeBuffer tempBuffer;
