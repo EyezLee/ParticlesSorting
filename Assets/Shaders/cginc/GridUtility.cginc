@@ -15,3 +15,12 @@ uint2 GridIDToGrid(uint id, uint gridNumX)
 	uint y = id / gridNumX;
 	return uint2(x, y);
 }
+
+bool Intersect(float r, float x, float y, float left, float right, float top, float bottom)
+{
+	float nearX = max(left, min(x, right));
+	float nearY = max(bottom, min(y, top));
+	float dx = nearX - x;
+	float dy = nearY - y;
+	return dx * dx + dy * dy <= r * r;
+}

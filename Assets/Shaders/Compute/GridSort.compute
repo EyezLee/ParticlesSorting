@@ -6,8 +6,8 @@
 #pragma kernel MakeGridLookUpTable
 #pragma kernel ResetGridLookUpTable
 
-#define BITONIC_BLOCK_SIZE 512
-#define TRANSPOSE_BLOCK_SIZE 16
+#define BITONIC_BLOCK_SIZE 64
+#define TRANSPOSE_BLOCK_SIZE 2
 
 #include "../cginc/GridUtility.cginc"
 
@@ -21,6 +21,7 @@ float _TargetInWorldX;
 float _TargetInWorldY;
 int _ParticleNum;
 int _TargetIndex;
+float _Range;
 
 
 struct Particle
@@ -40,7 +41,7 @@ float random(float2 uv)
     return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
 }
 
-[numthreads(8,1,1)]
+[numthreads(BITONIC_BLOCK_SIZE,1,1)]
 void Initialize(uint3 id : SV_DispatchThreadID)
 {
     Particle p = _ParticleBuffer[id.x];
@@ -56,7 +57,7 @@ void Initialize(uint3 id : SV_DispatchThreadID)
     _ParticleBuffer[id.x] = p;
 }
 
-[numthreads(8, 1, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void Update(uint3 id : SV_DispatchThreadID)
 {
     int targetIdx = max(0, min(_TargetIndex, _ParticleNum - 1));
@@ -67,32 +68,56 @@ void Update(uint3 id : SV_DispatchThreadID)
     float3 pos = _ParticleBuffer[id.x].position;
     int2 grid = (int2)PositionToGrid(pos, float2(spacingX, spacingY));
 
-    for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
+    float gxMin = grid.x * spacingX;
+    float gxMax = grid.x * spacingX + spacingX;
+    float gyMin = grid.y * spacingY;
+    float gyMax = grid.y * spacingY + spacingY;
+    int rightStep = ceil((_Range - (gxMax - pos.x)) / spacingX);
+    int leftStep = ceil((_Range - (pos.x - gxMin)) / spacingX);
+    int upStep = ceil((_Range - (gyMin - pos.y)) / spacingY);
+    int downStep = ceil((_Range - (pos.y - gyMax)) / spacingY);
+
+    for (int y = max(grid.y - downStep, 0); y <= min(grid.y + upStep, _GridNumY - 1); y++)
     {
-        for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
+        for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
         {
+            //if (!Intersect(_Range, pos.x, pos.y, x * spacingX, (x + 1) * spacingX, y * spacingY, (y + 1) * spacingY)) continue;
             int gid = GridToGridID(uint2(x, y), _GridNumX);
             int start = _GridTable[gid].x;
             int end = _GridTable[gid].y;
-           /* for (int i = start; i <= end; i++)
-                _ParticleBuffer[i].color = float3(0, 0, 1);*/
-
-
-            if (gid == GridToGridID(grid, _GridNumX))
+            for (int i = start; i <= end; i++)
             {
-                for (int i = start; i <= end; i++)
-                    _ParticleBuffer[i].color = float3(0, 0, 1);
-            }
-            else 
-            {
-                for (int i = start; i <= end; i++)
-                    _ParticleBuffer[i].color = float3(1, 0, 0);
+                Particle p = _ParticleBuffer[i];
+                if (length(p.position.xy - pos.xy) <= _Range)
+                    if(id.x == i)    _ParticleBuffer[i].color = float3(0, 1, 0);
+                    else
+                        _ParticleBuffer[i].color = float3(0, 0, 1);
             }
         }
     }
+
+    //for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
+    //{
+    //    for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
+    //    {
+    //        int gid = GridToGridID(uint2(x, y), _GridNumX);
+    //        int start = _GridTable[gid].x;
+    //        int end = _GridTable[gid].y;
+    //        if (gid == GridToGridID(grid, _GridNumX))
+    //        {
+    //            for (int i = start; i <= end; i++)
+    //                _ParticleBuffer[i].color = float3(0, 0, 1);
+    //        }
+    //        else 
+    //        {
+    //            for (int i = start; i <= end; i++)
+    //                _ParticleBuffer[i].color = float3(1, 0, 0);
+    //        }
+    //    }
+    //}
 }
 
-[numthreads(8, 1, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
 {
     Particle p = _ParticleBuffer[id.x];
@@ -103,13 +128,13 @@ void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
     _ParticleGridPair[id.x] = uint2(gridID, id.x);
 }
 
-[numthreads(8, 8, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void ResetGridLookUpTable(uint3 id : SV_DispatchThreadID)
 {
     _GridTable[id.x] = uint2(0, 0);
 }
 
-[numthreads(8, 1, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void MakeGridLookUpTable(uint3 id : SV_DispatchThreadID)
 {
     int currIndex = id.x;
@@ -122,14 +147,14 @@ void MakeGridLookUpTable(uint3 id : SV_DispatchThreadID)
     if (currGrid != nextGrid) _GridTable[currGrid].y = currIndex;
 }
 
-[numthreads(8, 1, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void RearrangeParticle(uint3 id : SV_DispatchThreadID)
 {
     int newID = _ParticleGridPair[id.x].y;
     _ParticleBuffer[id.x] = _ReadParticleBuffer[newID];
 }
 
-[numthreads(8, 1, 1)]
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void Debug(uint3 id : SV_DispatchThreadID)
 {
     Particle p = _ParticleBuffer[id.x];

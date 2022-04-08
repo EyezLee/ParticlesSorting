@@ -88,9 +88,7 @@ public class CPUParticleManager : MonoBehaviour
                 {
                     float dist = Vector3.Distance(self.transform.position, particles[j].transform.position);
                     if (dist <= neighborRange && j != i)
-                    {
                         count++;
-                    }
                 }
                 self.GetComponent<Renderer>().material.SetColor("_Color", new Color(count / 5f, 0, 0));
             }

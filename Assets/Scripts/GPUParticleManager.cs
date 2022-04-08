@@ -25,7 +25,7 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] Shader shader;
     [SerializeField] GameObject target;
     [SerializeField] int targetIndex = 0;
-    [SerializeField] [Range(0, 1)] float range = 0.5f;
+    [SerializeField] [Range(0, 10)] float range = 0.5f;
 
 
     ComputeBuffer particleBuffer, particleRearrangedBuffer;
@@ -35,7 +35,7 @@ public class GPUParticleManager : MonoBehaviour
     ComputeBuffer particleGridPairBuffer;
     ComputeBuffer gridTableBuffer;
 
-    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 8.0f); } }
+    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 64); } }
     Material material;
 
     BitonicSort bitonicSort;
@@ -72,6 +72,7 @@ public class GPUParticleManager : MonoBehaviour
     // update
     private void Update()
     {
+
         // make <particle, gridID> pair
         particleGridPairKernel = cs.FindKernel("MakeParticleGridPair");
         cs.SetInt("_BoundaryXMin", boundaryXMin);
@@ -98,7 +99,7 @@ public class GPUParticleManager : MonoBehaviour
         cs.SetBuffer(makeGridTableKernel, "_GridTable", gridTableBuffer);
         cs.Dispatch(makeGridTableKernel, particleDispatchGroupX, 1, 1);
 
-        // rearrange particles
+        //rearrange particles
         int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
         cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.SetBuffer(rearrangeParticleKernel, "_ReadParticleBuffer", particleBuffer);
@@ -126,10 +127,10 @@ public class GPUParticleManager : MonoBehaviour
         cs.SetInt("_GridNumY", gridNumY);
         cs.SetInt("_TargetIndex", targetIndex);
         cs.SetInt("_ParticleNum", particleNum);
+        cs.SetFloat("_Range", range);
         cs.SetBuffer(updateKernel, "_GridTable", gridTableBuffer);
         cs.SetBuffer(updateKernel, "_ParticleBuffer", particleBuffer);
         cs.Dispatch(updateKernel, particleDispatchGroupX, 1, 1);
-
 
         // draw instances
         Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
