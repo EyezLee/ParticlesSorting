@@ -294,7 +294,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.8, y: 5.5, z: -12.94}
+  m_LocalPosition: {x: 7.71, y: 7.54, z: -12.94}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -348,12 +348,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cs: {fileID: 7200000, guid: 8d30edd8fbeb17141beda8aa132fc4c5, type: 3}
   boundaryXMin: 0
-  boundaryXMax: 3
+  boundaryXMax: 15
   boundaryYMin: 0
-  boundaryYMax: 3
-  gridNumX: 8
-  gridNumY: 8
-  particleNum: 512
+  boundaryYMax: 15
+  gridNumX: 14
+  gridNumY: 14
+  particleNum: 16384
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   target: {fileID: 0}

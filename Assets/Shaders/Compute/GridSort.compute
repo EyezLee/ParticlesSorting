@@ -81,7 +81,7 @@ void Update(uint3 id : SV_DispatchThreadID)
     {
         for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
         {
-            //if (!Intersect(_Range, pos.x, pos.y, x * spacingX, (x + 1) * spacingX, y * spacingY, (y + 1) * spacingY)) continue;
+            if (!Intersect(_Range, pos.x, pos.y, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY)) continue;
             int gid = GridToGridID(uint2(x, y), _GridNumX);
             int start = _GridTable[gid].x;
             int end = _GridTable[gid].y;
