@@ -346,19 +346,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76e9f003abe2464fac227ca8437150d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  gridSortHelper: {fileID: 1154100724}
   cs: {fileID: 7200000, guid: 8d30edd8fbeb17141beda8aa132fc4c5, type: 3}
-  boundaryXMin: 0
-  boundaryXMax: 15
-  boundaryYMin: 0
-  boundaryYMax: 15
-  gridNumX: 14
-  gridNumY: 14
   particleNum: 16384
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   target: {fileID: 0}
   targetIndex: 301
-  range: 0.72
 --- !u!114 &1154100724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -368,10 +362,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 1154100721}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8362be473f1965e43b8cbf11724f41fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 79f9838989e864d4f93bf0f73d9c6a86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BitonicCS: {fileID: 7200000, guid: 7ee24ec2b4f03b249bbc58f5c441edf3, type: 3}
+  cs: {fileID: 7200000, guid: 8d30edd8fbeb17141beda8aa132fc4c5, type: 3}
+  boundaryXMin: 0
+  boundaryXMax: 10
+  boundaryYMin: 0
+  boundaryYMax: 10
+  gridNumX: 10
+  gridNumY: 10
+  neighborRange: 0.5
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0
