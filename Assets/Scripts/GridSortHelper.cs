@@ -66,16 +66,16 @@ public class GridSortHelper<T>
         tempBuffer?.Release();
 
         // clean grid look up table
-        //int resetGridTableKernel = cs.FindKernel("ResetGridLookUpTable");
-        //gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY, Marshal.SizeOf(typeof(Vector2)));
-        //cs.SetBuffer(resetGridTableKernel, "_GridTable", gridTableBuffer);
-        //cs.Dispatch(resetGridTableKernel, Mathf.CeilToInt(gridNumX / 8.0f), Mathf.CeilToInt(gridNumY / 8.0f), 1);
-        // build grid look up table
-        //int makeGridTableKernel = cs.FindKernel("MakeGridLookUpTable");
-        //cs.SetFloat("_ParticleNum", particleBuff.count);
-        //cs.SetBuffer(makeGridTableKernel, "_ParticleGridPair", particleGridPairBuffer);
-        //cs.SetBuffer(makeGridTableKernel, "_GridTable", gridTableBuffer);
-        //cs.Dispatch(makeGridTableKernel, particleDispatchGroupX, 1, 1);
+        int resetGridTableKernel = cs.FindKernel("ResetGridLookUpTable");
+        gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY, Marshal.SizeOf(typeof(Vector2)));
+        cs.SetBuffer(resetGridTableKernel, "_GridTable", gridTableBuffer);
+        cs.Dispatch(resetGridTableKernel, Mathf.CeilToInt(gridNumX / 8.0f), Mathf.CeilToInt(gridNumY / 8.0f), 1);
+        //build grid look up table
+        int makeGridTableKernel = cs.FindKernel("MakeGridLookUpTable");
+        cs.SetFloat("_ParticleNum", particleBuff.count);
+        cs.SetBuffer(makeGridTableKernel, "_ParticleGridPair", particleGridPairBuffer);
+        cs.SetBuffer(makeGridTableKernel, "_GridTable", gridTableBuffer);
+        cs.Dispatch(makeGridTableKernel, particleDispatchGroupX, 1, 1);
 
         //rearrange particles
         int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");

@@ -16,6 +16,7 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] Mesh prefab;
     [SerializeField] Shader shader;
     [SerializeField] int targetIndex = 0;
+    [SerializeField] [Range(0, 10)] float neighborRange = 1f;
 
     [SerializeField] int boundaryXMin;
     [SerializeField] int boundaryXMax;
@@ -66,7 +67,7 @@ public class GPUParticleManager : MonoBehaviour
     {
         gridSortHelper.Sort(ref particleBuffer);
         gridSortHelper.GridSortDebug(particleBuffer);
-        //gridSortHelper.NeighborRangeDebug(particleBuffer, targetIndex);
+        gridSortHelper.NeighborRangeDebug(particleBuffer, targetIndex, neighborRange);
 
         // draw instances
         Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
