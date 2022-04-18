@@ -11,8 +11,11 @@ public class GridSortHelper<T>
     int boundaryXMax;
     int boundaryYMin;
     int boundaryYMax;
+    int boundaryZMin;
+    int boundaryZMax;
     int gridNumX;
     int gridNumY;
+    int gridNumZ;
 
 
     ComputeBuffer particleRearrangedBuffer;
@@ -22,17 +25,22 @@ public class GridSortHelper<T>
     int particleNum;
     int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / BitonicSort.BITONIC_BLOCK_SIZE); } }
 
-    public GridSortHelper(int _particleNum, int _boundaryXMin, int _boundaryXMax, int _boundaryYMin, int _boundaryYMax, int _gridNumX, int _gridNumY)
+    public GridSortHelper(int _particleNum, int _boundaryXMin, int _boundaryXMax, int _boundaryYMin, int _boundaryYMax, int _boundaryZMin, int _boundaryZMax, int _gridNumX, int _gridNumY, int _gridNumZ)
     {
         particleNum = _particleNum;
         boundaryXMin = _boundaryXMin;
         boundaryXMax = _boundaryXMax;
         boundaryYMin = _boundaryYMin;
         boundaryYMax = _boundaryYMax;
+        boundaryZMin = _boundaryZMin;
+        boundaryZMax = _boundaryZMax;
         gridNumX = _gridNumX;
         gridNumY = _gridNumY;
+        gridNumZ = _gridNumZ;
         particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
         particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY * gridNumZ, Marshal.SizeOf(typeof(Vector2)));
+
     }
 
     void CheckConfigUpdates()
@@ -50,12 +58,7 @@ public class GridSortHelper<T>
         //    particleGridPairBuffer?.Release();
         //    particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
         //}
-        cs.SetInt("_BoundaryXMin", boundaryXMin);
-        cs.SetInt("_BoundaryXMax", boundaryXMax);
-        cs.SetInt("_BoundaryYMin", boundaryYMin);
-        cs.SetInt("_BoundaryYMax", boundaryYMax);
-        cs.SetInt("_GridNumX", gridNumX);
-        cs.SetInt("_GridNumY", gridNumY);
+        SetGridConfig();
         cs.SetBuffer(particleGridPairKernel, "_ParticleBuffer", particleBuff);
         cs.SetBuffer(particleGridPairKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.Dispatch(particleGridPairKernel, particleDispatchGroupX, 1, 1);
@@ -67,9 +70,8 @@ public class GridSortHelper<T>
 
         // clean grid look up table
         int resetGridTableKernel = cs.FindKernel("ResetGridLookUpTable");
-        gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY, Marshal.SizeOf(typeof(Vector2)));
         cs.SetBuffer(resetGridTableKernel, "_GridTable", gridTableBuffer);
-        cs.Dispatch(resetGridTableKernel, Mathf.CeilToInt(gridNumX / 8.0f), Mathf.CeilToInt(gridNumY / 8.0f), 1);
+        cs.Dispatch(resetGridTableKernel, particleDispatchGroupX, 1, 1);
         //build grid look up table
         int makeGridTableKernel = cs.FindKernel("MakeGridLookUpTable");
         cs.SetFloat("_ParticleNum", particleBuff.count);
@@ -99,6 +101,7 @@ public class GridSortHelper<T>
         int debugKernel = cs.FindKernel("Debug");
         cs.SetInt("_GridNumX", gridNumX);
         cs.SetInt("_GridNumY", gridNumY);
+        cs.SetInt("_GridNumZ", gridNumZ);
         cs.SetBuffer(debugKernel, "_ParticleBuffer", particleBuff);
         cs.SetBuffer(debugKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.Dispatch(debugKernel, particleDispatchGroupX, 1, 1);
@@ -107,18 +110,26 @@ public class GridSortHelper<T>
     public void NeighborRangeDebug(ComputeBuffer particleBuff, int index, float neighborRange)
     {
         int neighborDebug = cs.FindKernel("NeighborDebug");
-        cs.SetInt("_BoundaryXMin", boundaryXMin);
-        cs.SetInt("_BoundaryXMax", boundaryXMax);
-        cs.SetInt("_BoundaryYMin", boundaryYMin);
-        cs.SetInt("_BoundaryYMax", boundaryYMax);
-        cs.SetInt("_GridNumX", gridNumX);
-        cs.SetInt("_GridNumY", gridNumY);
+        SetGridConfig();
         cs.SetInt("_ParticleNum", particleBuff.count);
         cs.SetInt("_TargetIndex", index);
         cs.SetFloat("_Range", neighborRange);
         cs.SetBuffer(neighborDebug, "_GridTable", gridTableBuffer);
         cs.SetBuffer(neighborDebug, "_ParticleBuffer", particleBuff);
         cs.Dispatch(neighborDebug, particleDispatchGroupX, 1, 1);
+    }
+
+    void SetGridConfig()
+    {
+        cs.SetInt("_BoundaryXMin", boundaryXMin);
+        cs.SetInt("_BoundaryXMax", boundaryXMax);
+        cs.SetInt("_BoundaryYMin", boundaryYMin);
+        cs.SetInt("_BoundaryYMax", boundaryYMax);
+        cs.SetInt("_BoundaryZMin", boundaryZMin);
+        cs.SetInt("_BoundaryZMax", boundaryZMax);
+        cs.SetInt("_GridNumX", gridNumX);
+        cs.SetInt("_GridNumY", gridNumY);
+        cs.SetInt("_GridNumZ", gridNumZ);
     }
 
     public void DisposeGridBuffers()
@@ -134,9 +145,14 @@ public class GridSortHelper<T>
         {
             for (int j = 0; j < gridNumY; j++)
             {
-                float width = (boundaryXMax - boundaryXMin) / (float)gridNumX;
-                float height = (boundaryYMax - boundaryYMin) / (float)gridNumY;
-                Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, 0), new Vector3(width, height, 0));
+                for (int k = 0; k < gridNumZ; k++)
+                {
+                    float width = (boundaryXMax - boundaryXMin) / (float)gridNumX;
+                    float height = (boundaryYMax - boundaryYMin) / (float)gridNumY;
+                    float depth = (boundaryZMax - boundaryZMin) / (float)gridNumZ;
+                    Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, k * depth + depth * 0.5f), 
+                        new Vector3(width, height, depth));
+                }
             }
         }
     }

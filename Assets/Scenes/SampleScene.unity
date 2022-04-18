@@ -256,12 +256,16 @@ MonoBehaviour:
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   targetIndex: 301
+  neighborRange: 1
   boundaryXMin: 0
   boundaryXMax: 5
   boundaryYMin: 0
   boundaryYMax: 5
+  boundaryZMin: 0
+  boundaryZMax: 0
   gridNumX: 10
   gridNumY: 10
+  gridNumZ: 0
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0

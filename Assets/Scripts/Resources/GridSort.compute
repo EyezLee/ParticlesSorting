@@ -15,8 +15,11 @@ int _BoundaryXMin;
 int _BoundaryXMax;
 int _BoundaryYMin;
 int _BoundaryYMax;
+int _BoundaryZMin;
+int _BoundaryZMax;
 int _GridNumX;
 int _GridNumY;
+int _GridNumZ;
 float _TargetInWorldX;
 float _TargetInWorldY;
 int _ParticleNum;
@@ -47,12 +50,14 @@ void Initialize(uint3 id : SV_DispatchThreadID)
     Particle p = _ParticleBuffer[id.x];
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
+    float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
 
    /* float posX = (id.x % _GridNumX) * spacingX + spacingX * 0.5f;
     float posY = floor(id.x / _GridNumX) * spacingY + spacingY * 0.5f; */
     float posX = _BoundaryXMin + random(float2(id.x, id.x % _GridNumX)) * (_BoundaryXMax - _BoundaryXMin);
     float posY = _BoundaryYMin + random(float2(id.x / _GridNumY, id.x)) * (_BoundaryYMax - _BoundaryYMin);
-    p.position = float3(posX, posY, 0);
+    float posZ = _BoundaryZMin + random(float2(id.x / (_GridNumX * _GridNumY), id.x)) * (_BoundaryZMax - _BoundaryZMin);
+    p.position = float3(posX, posY, posZ);
     p.color = float3(0, 1, 0);
     _ParticleBuffer[id.x] = p;
 }
@@ -72,38 +77,43 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
 
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
+    float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
+
     float3 pos = _ParticleBuffer[id.x].position;
-    int2 grid = (int2)PositionToGrid(pos, float2(spacingX, spacingY));
+    int3 grid = (int3)PositionToGrid(pos, float3(spacingX, spacingY, spacingZ));
 
     float gxMin = grid.x * spacingX;
     float gxMax = grid.x * spacingX + spacingX;
     float gyMin = grid.y * spacingY;
     float gyMax = grid.y * spacingY + spacingY;
+    float gzMin = grid.z * spacingZ;
+    float gzMax = grid.z * spacingZ + spacingZ;
     int rightStep = ceil((_Range - (gxMax - pos.x)) / spacingX);
     int leftStep = ceil((_Range - (pos.x - gxMin)) / spacingX);
     int upStep = ceil((_Range - (gyMin - pos.y)) / spacingY);
     int downStep = ceil((_Range - (pos.y - gyMax)) / spacingY);
+    int frontStep = ceil((_Range - (gzMax - pos.z)) / spacingZ);
+    int backStep = ceil((_Range - (pos.z - gzMin)) / spacingZ);
 
-    for (int y = max(grid.y - downStep, 0); y <= min(grid.y + upStep, _GridNumY - 1); y++)
+    for (int z = max(grid.z - backStep, 0); z <= min(grid.z + frontStep, _GridNumZ - 1); z++)
     {
-        for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
+        for (int y = max(grid.y - downStep, 0); y <= min(grid.y + upStep, _GridNumY - 1); y++)
         {
-            if (!Intersect(_Range, pos.x, pos.y, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY)) continue;
-            int gid = GridToGridID(uint2(x, y), _GridNumX);
-            int start = _GridTable[gid].x;
-            int end = _GridTable[gid].y;
-            for (int i = start; i <= end; i++)
+            for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
             {
-                Particle p = _ParticleBuffer[i];
-                if (length(p.position.xy - pos.xy) <= _Range)
-                    if(id.x == i)    
-                        _ParticleBuffer[i].color = float3(0, 1, 0);
-                    else
+                //if (!Intersect(_Range, pos, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY)) continue;
+                int gid = GridToGridID(uint3(x, y, z), _GridNumX, _GridNumY);
+                int start = _GridTable[gid].x;
+                int end = _GridTable[gid].y;
+                for (int i = start; i <= end; i++)
+                {
+                    Particle p = _ParticleBuffer[i];
+                    if (length(p.position - pos) <= _Range)
                         _ParticleBuffer[i].color = float3(0, 0, 1);
+                }
             }
         }
     }
-
     //for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
     //{
     //    for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
@@ -131,8 +141,10 @@ void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
     Particle p = _ParticleBuffer[id.x];
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
-    uint2 grid = PositionToGrid(p.position, float2(spacingX, spacingY));
-    uint gridID = GridToGridID(grid, _GridNumX);
+    float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
+
+    uint3 grid = PositionToGrid(p.position, float3(spacingX, spacingY, spacingZ));
+    uint gridID = GridToGridID(grid, _GridNumX, _GridNumY);
     _ParticleGridPair[id.x] = uint2(gridID, id.x);
 }
 
@@ -169,8 +181,8 @@ void Debug(uint3 id : SV_DispatchThreadID)
 
     // assign grid id to particle color
     uint gridID = _ParticleGridPair[id.x].x;
-    uint2 grid = GridIDToGrid(gridID, _GridNumX);
-    p.color = float3(grid.x/(float)_GridNumX, grid.y/(float)_GridNumY, 0);
+    uint3 grid = GridIDToGrid(gridID, _GridNumX, _GridNumY);
+    p.color = float3(grid.x/(float)_GridNumX, grid.y/(float)_GridNumY, grid.z/(float)_GridNumZ);
 
     _ParticleBuffer[id.x] = p;
 }
