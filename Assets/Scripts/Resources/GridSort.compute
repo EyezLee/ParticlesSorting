@@ -1,4 +1,3 @@
-#pragma kernel Initialize
 #pragma kernel NeighborDebug
 #pragma kernel MakeParticleGridPair
 #pragma kernel Debug
@@ -6,61 +5,20 @@
 #pragma kernel MakeGridLookUpTable
 #pragma kernel ResetGridLookUpTable
 
-#define BITONIC_BLOCK_SIZE 512
-#define TRANSPOSE_BLOCK_SIZE 16
 
+#include "../../Shaders/cginc/GridConfig.cginc"
 #include "../../Shaders/cginc/GridUtility.cginc"
+#include "../../Shaders/cginc/DataBridge.cginc"
 
-int _BoundaryXMin;
-int _BoundaryXMax;
-int _BoundaryYMin;
-int _BoundaryYMax;
-int _BoundaryZMin;
-int _BoundaryZMax;
-int _GridNumX;
-int _GridNumY;
-int _GridNumZ;
-float _TargetInWorldX;
-float _TargetInWorldY;
+
 int _ParticleNum;
 int _TargetIndex;
 float _Range;
 
-
-struct Particle
-{
-    float3 position;
-    float3 color;
-};
-RWStructuredBuffer<Particle> _ParticleBuffer;
-StructuredBuffer<Particle> _ReadParticleBuffer;
+StructuredBuffer<Data> _ReadParticleBuffer;
 
 RWStructuredBuffer<uint2> _ParticleGridPair;
 RWStructuredBuffer<uint2> _GridTable;
-
-
-float random(float2 uv)
-{
-    return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453123);
-}
-
-[numthreads(BITONIC_BLOCK_SIZE,1,1)]
-void Initialize(uint3 id : SV_DispatchThreadID)
-{
-    Particle p = _ParticleBuffer[id.x];
-    float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
-    float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
-    float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
-
-   /* float posX = (id.x % _GridNumX) * spacingX + spacingX * 0.5f;
-    float posY = floor(id.x / _GridNumX) * spacingY + spacingY * 0.5f; */
-    float posX = _BoundaryXMin + random(float2(id.x, id.x % _GridNumX)) * (_BoundaryXMax - _BoundaryXMin);
-    float posY = _BoundaryYMin + random(float2(id.x / _GridNumY, id.x)) * (_BoundaryYMax - _BoundaryYMin);
-    float posZ = _BoundaryZMin + random(float2(id.x / (_GridNumX * _GridNumY), id.x)) * (_BoundaryZMax - _BoundaryZMin);
-    p.position = float3(posX, posY, posZ);
-    p.color = float3(0, 1, 0);
-    _ParticleBuffer[id.x] = p;
-}
 
 // 1x1x1 neighbor search
 

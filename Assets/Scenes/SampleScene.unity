@@ -251,21 +251,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e76e9f003abe2464fac227ca8437150d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cs: {fileID: 7200000, guid: 59443e1ba4814144bac773dc5814942f, type: 3}
+  cs: {fileID: 7200000, guid: bade92c8bc8b61649b23beb3298a9b31, type: 3}
   particleNum: 16384
   prefab: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   targetIndex: 301
   neighborRange: 1
   boundaryXMin: 0
-  boundaryXMax: 5
+  boundaryXMax: 10
   boundaryYMin: 0
-  boundaryYMax: 5
+  boundaryYMax: 10
   boundaryZMin: 0
   boundaryZMax: 0
   gridNumX: 10
   gridNumY: 10
-  gridNumZ: 0
+  gridNumZ: 1
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0

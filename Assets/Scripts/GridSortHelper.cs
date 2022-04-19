@@ -48,6 +48,11 @@ public class GridSortHelper<T>
 
     }
 
+    void CheckBufferUpdate(ComputeBuffer buffer)
+    {
+        
+    }
+
     public void Sort(ref ComputeBuffer particleBuff)
     {
         particleNum = particleNum == particleBuff.count ? particleNum : particleBuff.count;
