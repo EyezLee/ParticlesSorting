@@ -65,7 +65,7 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
                 int end = _GridTable[gid].y;
                 for (int i = start; i <= end; i++)
                 {
-                    Particle p = _ParticleBuffer[i];
+                    Data p = _ParticleBuffer[i];
                     if (length(p.position - pos) <= _Range)
                         _ParticleBuffer[i].color = float3(0, 0, 1);
                 }
