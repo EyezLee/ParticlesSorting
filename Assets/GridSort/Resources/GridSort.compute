@@ -96,7 +96,7 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
 [numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
 {
-    Particle p = _ParticleBuffer[id.x];
+    Data p = _ParticleBuffer[id.x];
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
     float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
@@ -135,7 +135,7 @@ void RearrangeParticle(uint3 id : SV_DispatchThreadID)
 [numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
 void Debug(uint3 id : SV_DispatchThreadID)
 {
-    Particle p = _ParticleBuffer[id.x];
+    Data p = _ParticleBuffer[id.x];
 
     // assign grid id to particle color
     uint gridID = _ParticleGridPair[id.x].x;
