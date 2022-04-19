@@ -38,7 +38,7 @@ public class GridSortHelper<T>
         gridNumY = _gridNumY;
         gridNumZ = _gridNumZ;
         particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
-        particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(T)));
         gridTableBuffer = new ComputeBuffer(gridNumX * gridNumY * gridNumZ, Marshal.SizeOf(typeof(Vector2)));
 
     }
