@@ -1,5 +1,5 @@
-#include "../cginc/GridConfig.cginc"
-#include "../cginc/DataBridge.cginc"
+#include "../../GridSort/Resources/cginc/GridConfig.cginc"
+#include "../../GridSort/Resources/cginc/DataBridge.cginc"
 
 #pragma kernel Initialize
 

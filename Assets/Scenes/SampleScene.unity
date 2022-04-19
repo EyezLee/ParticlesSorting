@@ -262,10 +262,10 @@ MonoBehaviour:
   boundaryYMin: 0
   boundaryYMax: 10
   boundaryZMin: 0
-  boundaryZMax: 0
+  boundaryZMax: 5
   gridNumX: 10
   gridNumY: 10
-  gridNumZ: 1
+  gridNumZ: 10
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0

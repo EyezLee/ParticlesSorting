@@ -6,9 +6,9 @@
 #pragma kernel ResetGridLookUpTable
 
 
-#include "../../Shaders/cginc/GridConfig.cginc"
-#include "../../Shaders/cginc/GridUtility.cginc"
-#include "../../Shaders/cginc/DataBridge.cginc"
+#include "../Resources/cginc/GridConfig.cginc"
+#include "../Resources/cginc/GridUtility.cginc"
+#include "../Resources/cginc/DataBridge.cginc"
 
 
 int _ParticleNum;
