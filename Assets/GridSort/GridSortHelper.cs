@@ -82,11 +82,6 @@ public class GridSortHelper<T>
 
         // make <particle, gridID> pair
         int particleGridPairKernel = cs.FindKernel("MakeParticleGridPair");
-        //if (particleGridPairBuffer.count != particleNum)
-        //{
-        //    particleGridPairBuffer?.Release();
-        //    particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
-        //}
         SetGridConfig();
         cs.SetBuffer(particleGridPairKernel, "_ParticleBuffer", particleBuff);
         cs.SetBuffer(particleGridPairKernel, "_ParticleGridPair", particleGridPairBuffer);
@@ -110,11 +105,6 @@ public class GridSortHelper<T>
 
         //rearrange particles
         int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
-        //if (particleRearrangedBuffer.count != particleNum)
-        //{
-        //    particleRearrangedBuffer?.Release();
-        //    particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(T)));
-        //}
         cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.SetBuffer(rearrangeParticleKernel, "_ReadParticleBuffer", particleBuff);
         cs.SetBuffer(rearrangeParticleKernel, "_ParticleBuffer", particleRearrangedBuffer);
