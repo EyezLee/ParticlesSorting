@@ -18,15 +18,7 @@ public class GPUParticleManager : MonoBehaviour
     [SerializeField] int targetIndex = 0;
     [SerializeField] [Range(0, 10)] float neighborRange = 1f;
 
-    [SerializeField] int boundaryXMin;
-    [SerializeField] int boundaryXMax;
-    [SerializeField] int boundaryYMin;
-    [SerializeField] int boundaryYMax;
-    [SerializeField] int boundaryZMin;
-    [SerializeField] int boundaryZMax;
-    [SerializeField] int gridNumX;
-    [SerializeField] int gridNumY;
-    [SerializeField] int gridNumZ;
+    [SerializeField] GridConfig gridConfig;
 
 
     ComputeBuffer particleBuffer;
@@ -41,19 +33,19 @@ public class GPUParticleManager : MonoBehaviour
     // initialize
     private void Start()
     {
-        gridSortHelper = new GridSortHelper<Particle>(particleNum, boundaryXMin, boundaryXMax, boundaryYMin, boundaryYMax, boundaryZMin, boundaryZMax, gridNumX, gridNumY, gridNumZ);
+        gridSortHelper = new GridSortHelper<Particle>(particleNum, gridConfig);
 
         initializeKernel = cs.FindKernel("Initialize");
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
-        cs.SetInt("_BoundaryXMin", boundaryXMin);
-        cs.SetInt("_BoundaryXMax", boundaryXMax);
-        cs.SetInt("_BoundaryYMin", boundaryYMin);
-        cs.SetInt("_BoundaryYMax", boundaryYMax);
-        cs.SetInt("_BoundaryZMin", boundaryZMin);
-        cs.SetInt("_BoundaryZMax", boundaryZMax);
-        cs.SetInt("_GridNumX", gridNumX);
-        cs.SetInt("_GridNumY", gridNumY);
-        cs.SetInt("_GridNumZ", gridNumZ);
+        cs.SetInt("_BoundaryXMin", gridConfig.boundaryXMin);
+        cs.SetInt("_BoundaryXMax", gridConfig.boundaryXMax);
+        cs.SetInt("_BoundaryYMin", gridConfig.boundaryYMin);
+        cs.SetInt("_BoundaryYMax", gridConfig.boundaryYMax);
+        cs.SetInt("_BoundaryZMin", gridConfig.boundaryZMin);
+        cs.SetInt("_BoundaryZMax", gridConfig.boundaryZMax);
+        cs.SetInt("_GridNumX", gridConfig.gridNumX);
+        cs.SetInt("_GridNumY", gridConfig.gridNumY);
+        cs.SetInt("_GridNumZ", gridConfig.gridNumZ);
         cs.SetBuffer(initializeKernel, "_ParticleBuffer", particleBuffer);
         cs.Dispatch(initializeKernel, particleDispatchGroupX, 1, 1);
 
@@ -71,7 +63,7 @@ public class GPUParticleManager : MonoBehaviour
     // update
     private void Update()
     {
-        gridSortHelper.Sort(ref particleBuffer);
+        gridSortHelper.Sort(ref particleBuffer, gridConfig);
         gridSortHelper.GridSortDebug(particleBuffer);
         gridSortHelper.NeighborRangeDebug(particleBuffer, targetIndex, neighborRange);
 

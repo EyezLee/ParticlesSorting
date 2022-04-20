@@ -69,11 +69,12 @@ public class CPUParticleManager : MonoBehaviour
                 quadTree.Insert(new Vector2(p.transform.position.x, p.transform.position.y));
             }
 
-            //// query quad tree to flush neighbor list 
+            // query quad tree to flush neighbor list 
             foreach (var p in particles)
             {
                 List<Vector2> neighbors = quadTree.Query(new Vector2(p.transform.position.x, p.transform.position.y), neighborRange, new List<Vector2>());
-                p.GetComponent<Renderer>().material.SetColor("_Color", new Color(neighbors.Count / 5f, 0, 0));
+                //p.GetComponent<Renderer>().material.SetColor("_Color", new Color(neighbors.Count / 5f, 0, 0));
+                
             }
         }
         // --------------CPU robust neighbor searching-----------------------
