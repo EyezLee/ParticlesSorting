@@ -12,7 +12,7 @@ struct Particle
 public class GPUParticleManager : MonoBehaviour
 {
     [SerializeField] ComputeShader cs;
-    [SerializeField] int particleNum = 8;
+    [SerializeField] PARTICLE_NUM particleNumber;
     [SerializeField] Mesh prefab;
     [SerializeField] Shader shader;
     [SerializeField] int targetIndex = 0;
@@ -22,8 +22,9 @@ public class GPUParticleManager : MonoBehaviour
 
 
     ComputeBuffer particleBuffer;
-    int initializeKernel;
+    int ResetKernel;
     ComputeBuffer indirectArgsBuffer;
+    int particleNum { get { return (int)particleNumber; } }
 
     GridSortHelper<Particle> gridSortHelper;
 
@@ -34,9 +35,56 @@ public class GPUParticleManager : MonoBehaviour
     private void Start()
     {
         gridSortHelper = new GridSortHelper<Particle>(particleNum, gridConfig);
+        material = new Material(shader);
 
-        initializeKernel = cs.FindKernel("Initialize");
+        ResetParticles();
+
+        ResetIndirectDraw();
+
+    }
+
+    // update
+    private void Update()
+    {
+        if(particleNum != particleBuffer.count)
+        {
+            ResetParticles();
+            ResetIndirectDraw();
+        }
+
+
+        gridSortHelper.Sort(ref particleBuffer, gridConfig);
+        //gridSortHelper.GridSortDebug(particleBuffer);
+        //gridSortHelper.NeighborRangeDebug(particleBuffer, targetIndex, neighborRange);
+
+        // draw instances
+        Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
+    }
+
+    void ResetParticles()
+    {
+        ResetKernel = cs.FindKernel("Reset");
+        particleBuffer?.Release();
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        SetGridConfigParams();
+        cs.SetBuffer(ResetKernel, "_ParticleBuffer", particleBuffer);
+        cs.Dispatch(ResetKernel, particleDispatchGroupX, 1, 1);
+    }
+
+    private void ResetIndirectDraw()
+    {
+        // indirect draw arg buffer
+        indirectArgsBuffer?.Release();
+        indirectArgsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
+        indirectArgsBuffer.SetData(new uint[5]
+        {
+            prefab.GetIndexCount(0), (uint)particleNum, 0, 0, 0
+        });
+        material.SetBuffer("_ParticleBuffer", particleBuffer);
+    }
+
+    void SetGridConfigParams()
+    {
         cs.SetInt("_BoundaryXMin", gridConfig.boundaryXMin);
         cs.SetInt("_BoundaryXMax", gridConfig.boundaryXMax);
         cs.SetInt("_BoundaryYMin", gridConfig.boundaryYMin);
@@ -46,32 +94,7 @@ public class GPUParticleManager : MonoBehaviour
         cs.SetInt("_GridNumX", gridConfig.gridNumX);
         cs.SetInt("_GridNumY", gridConfig.gridNumY);
         cs.SetInt("_GridNumZ", gridConfig.gridNumZ);
-        cs.SetBuffer(initializeKernel, "_ParticleBuffer", particleBuffer);
-        cs.Dispatch(initializeKernel, particleDispatchGroupX, 1, 1);
-
-        // indirect draw arg buffer
-        indirectArgsBuffer = new ComputeBuffer(1, 5 * sizeof(uint), ComputeBufferType.IndirectArguments);
-        indirectArgsBuffer.SetData(new uint[5]
-        {
-            prefab.GetIndexCount(0), (uint)particleNum, 0, 0, 0
-        });
-        material = new Material(shader);
-        material.SetBuffer("_ParticleBuffer", particleBuffer);
-
     }
-
-    // update
-    private void Update()
-    {
-        gridSortHelper.Sort(ref particleBuffer, gridConfig);
-        gridSortHelper.GridSortDebug(particleBuffer);
-        gridSortHelper.NeighborRangeDebug(particleBuffer, targetIndex, neighborRange);
-
-        // draw instances
-        Graphics.DrawMeshInstancedIndirect(prefab, 0, material, new Bounds(Vector3.zero, new Vector3(100.0f, 100.0f, 100.0f)), indirectArgsBuffer);
-    }
-
-    
     private void OnDisable()
     {
         particleBuffer?.Release();
@@ -95,10 +118,10 @@ public class GPUParticleManager : MonoBehaviour
 
     }
 
-    private void OnDrawGizmos()
-    {
-        gridSortHelper?.DebugGrid();
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    gridSortHelper?.DebugGrid();
+    //}
 
 }
 

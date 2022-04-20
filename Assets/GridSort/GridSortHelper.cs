@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 
-
 [System.Serializable]
 public struct GridConfig
 {
@@ -82,7 +81,7 @@ public class GridSortHelper<T>
 
         // make <particle, gridID> pair
         int particleGridPairKernel = cs.FindKernel("MakeParticleGridPair");
-        SetGridConfig();
+        SetGridConfigParams();
         cs.SetBuffer(particleGridPairKernel, "_ParticleBuffer", particleBuff);
         cs.SetBuffer(particleGridPairKernel, "_ParticleGridPair", particleGridPairBuffer);
         cs.Dispatch(particleGridPairKernel, particleDispatchGroupX, 1, 1);
@@ -104,11 +103,14 @@ public class GridSortHelper<T>
         cs.Dispatch(makeGridTableKernel, particleDispatchGroupX, 1, 1);
 
         //rearrange particles
-        int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
-        cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
-        cs.SetBuffer(rearrangeParticleKernel, "_ReadParticleBuffer", particleBuff);
-        cs.SetBuffer(rearrangeParticleKernel, "_ParticleBuffer", particleRearrangedBuffer);
-        cs.Dispatch(rearrangeParticleKernel, particleDispatchGroupX, 1, 1);
+        //int rearrangeParticleKernel = cs.FindKernel("RearrangeParticle");
+        //cs.SetBuffer(rearrangeParticleKernel, "_ParticleGridPair", particleGridPairBuffer);
+        //cs.SetBuffer(rearrangeParticleKernel, "_ReadParticleBuffer", particleBuff);
+        //cs.SetBuffer(rearrangeParticleKernel, "_ParticleBuffer", particleRearrangedBuffer);
+        //cs.Dispatch(rearrangeParticleKernel, particleDispatchGroupX, 1, 1);
+
+        Debug.Log("Particle Buffer " + particleBuff.count + " | rearranged particle buffer " + particleRearrangedBuffer.count
+            + " | pair buffer " + particleGridPairBuffer.count + " | table buffer " + gridTableBuffer.count);
 
         // swap buffer
         (particleBuff, particleRearrangedBuffer) = (particleRearrangedBuffer, particleBuff);
@@ -129,7 +131,7 @@ public class GridSortHelper<T>
     public void NeighborRangeDebug(ComputeBuffer particleBuff, int index, float neighborRange)
     {
         int neighborDebug = cs.FindKernel("NeighborDebug");
-        SetGridConfig();
+        SetGridConfigParams();
         cs.SetInt("_ParticleNum", particleBuff.count);
         cs.SetInt("_TargetIndex", index);
         cs.SetFloat("_Range", neighborRange);
@@ -138,7 +140,7 @@ public class GridSortHelper<T>
         cs.Dispatch(neighborDebug, particleDispatchGroupX, 1, 1);
     }
 
-    void SetGridConfig()
+    void SetGridConfigParams()
     {
         cs.SetInt("_BoundaryXMin", gridConfig.boundaryXMin);
         cs.SetInt("_BoundaryXMax", gridConfig.boundaryXMax);
