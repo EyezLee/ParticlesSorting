@@ -53,44 +53,47 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
     int frontStep = ceil((_Range - (gzMax - pos.z)) / spacingZ);
     int backStep = ceil((_Range - (pos.z - gzMin)) / spacingZ);
 
-    for (int z = max(grid.z - backStep, 0); z <= min(grid.z + frontStep, _GridNumZ - 1); z++)
+    //for (int z = max(grid.z - backStep, 0); z <= min(grid.z + frontStep, _GridNumZ - 1); z++)
+    //{
+    //    for (int y = max(grid.y - downStep, 0); y <= min(grid.y + upStep, _GridNumY - 1); y++)
+    //    {
+    //        for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
+    //        {
+    //            //if (!Intersect(_Range, pos, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY, (z + 1) * spacingZ, z * spacingZ)) continue;
+    //            int gid = GridToGridID(uint3(x, y, z), _GridNumX, _GridNumY);
+    //            int start = _GridTable[gid].x;
+    //            int end = _GridTable[gid].y;
+    //            for (int i = start; i <= end; i++)
+    //            {
+    //                float3 pPos = _ParticleBuffer[i].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
+    //                if (length(pPos - pos) <= _Range)
+    //                    _ParticleBuffer[i].color = float3(0, 0, 1);
+    //            }
+    //        }
+    //    }
+    //}
+    for (int z = max(grid.z - 1, 0); z <= min(grid.z + 1, _GridNumZ - 1); z++)
     {
-        for (int y = max(grid.y - downStep, 0); y <= min(grid.y + upStep, _GridNumY - 1); y++)
+        for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
         {
-            for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
+            for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
             {
-                //if (!Intersect(_Range, pos, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY, (z + 1) * spacingZ, z * spacingZ)) continue;
                 int gid = GridToGridID(uint3(x, y, z), _GridNumX, _GridNumY);
                 int start = _GridTable[gid].x;
                 int end = _GridTable[gid].y;
-                for (int i = start; i <= end; i++)
+                if (gid == GridToGridID(grid, _GridNumX, _GridNumY))
                 {
-                    float3 pPos = _ParticleBuffer[i].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
-                    if (length(pPos - pos) <= _Range)
+                    for (int i = start; i <= end; i++)
                         _ParticleBuffer[i].color = float3(0, 0, 1);
+                }
+                else
+                {
+                    for (int i = start; i <= end; i++)
+                        _ParticleBuffer[i].color = float3(1, 0, 0);
                 }
             }
         }
     }
-    //for (int y = max(grid.y - 1, 0); y <= min(grid.y + 1, _GridNumY - 1); y++)
-    //{
-    //    for (int x = max(grid.x - 1, 0); x <= min(grid.x + 1, _GridNumX - 1); x++)
-    //    {
-    //        int gid = GridToGridID(uint2(x, y), _GridNumX);
-    //        int start = _GridTable[gid].x;
-    //        int end = _GridTable[gid].y;
-    //        if (gid == GridToGridID(grid, _GridNumX))
-    //        {
-    //            for (int i = start; i <= end; i++)
-    //                _ParticleBuffer[i].color = float3(0, 0, 1);
-    //        }
-    //        else 
-    //        {
-    //            for (int i = start; i <= end; i++)
-    //                _ParticleBuffer[i].color = float3(1, 0, 0);
-    //        }
-    //    }
-    //}
 }
 
 [numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
