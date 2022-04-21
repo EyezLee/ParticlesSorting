@@ -37,12 +37,12 @@ public class GPUParticleManager : MonoBehaviour
 
         initializeKernel = cs.FindKernel("Initialize");
         particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
-        cs.SetInt("_BoundaryXMin", gridConfig.boundaryXMin);
-        cs.SetInt("_BoundaryXMax", gridConfig.boundaryXMax);
-        cs.SetInt("_BoundaryYMin", gridConfig.boundaryYMin);
-        cs.SetInt("_BoundaryYMax", gridConfig.boundaryYMax);
-        cs.SetInt("_BoundaryZMin", gridConfig.boundaryZMin);
-        cs.SetInt("_BoundaryZMax", gridConfig.boundaryZMax);
+        cs.SetFloat("_BoundaryXMin", gridConfig.boundaryXMin);
+        cs.SetFloat("_BoundaryXMax", gridConfig.boundaryXMax);
+        cs.SetFloat("_BoundaryYMin", gridConfig.boundaryYMin);
+        cs.SetFloat("_BoundaryYMax", gridConfig.boundaryYMax);
+        cs.SetFloat("_BoundaryZMin", gridConfig.boundaryZMin);
+        cs.SetFloat("_BoundaryZMax", gridConfig.boundaryZMax);
         cs.SetInt("_GridNumX", gridConfig.gridNumX);
         cs.SetInt("_GridNumY", gridConfig.gridNumY);
         cs.SetInt("_GridNumZ", gridConfig.gridNumZ);

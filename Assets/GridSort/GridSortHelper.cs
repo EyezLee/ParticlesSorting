@@ -7,12 +7,12 @@ using System.Runtime.InteropServices;
 [System.Serializable]
 public struct GridConfig
 {
-    public int boundaryXMin;
-    public int boundaryXMax;
-    public int boundaryYMin;
-    public int boundaryYMax;
-    public int boundaryZMin;
-    public int boundaryZMax;
+    public float boundaryXMin;
+    public float boundaryXMax;
+    public float boundaryYMin;
+    public float boundaryYMax;
+    public float boundaryZMin;
+    public float boundaryZMax;
     public int gridNumX;
     public int gridNumY;
     public int gridNumZ;
@@ -140,12 +140,12 @@ public class GridSortHelper<T>
 
     void SetGridConfig()
     {
-        cs.SetInt("_BoundaryXMin", gridConfig.boundaryXMin);
-        cs.SetInt("_BoundaryXMax", gridConfig.boundaryXMax);
-        cs.SetInt("_BoundaryYMin", gridConfig.boundaryYMin);
-        cs.SetInt("_BoundaryYMax", gridConfig.boundaryYMax);
-        cs.SetInt("_BoundaryZMin", gridConfig.boundaryZMin);
-        cs.SetInt("_BoundaryZMax", gridConfig.boundaryZMax);
+        cs.SetFloat("_BoundaryXMin", gridConfig.boundaryXMin);
+        cs.SetFloat("_BoundaryXMax", gridConfig.boundaryXMax);
+        cs.SetFloat("_BoundaryYMin", gridConfig.boundaryYMin);
+        cs.SetFloat("_BoundaryYMax", gridConfig.boundaryYMax);
+        cs.SetFloat("_BoundaryZMin", gridConfig.boundaryZMin);
+        cs.SetFloat("_BoundaryZMax", gridConfig.boundaryZMax);
         cs.SetInt("_GridNumX", gridConfig.gridNumX);
         cs.SetInt("_GridNumY", gridConfig.gridNumY);
         cs.SetInt("_GridNumZ", gridConfig.gridNumZ);
