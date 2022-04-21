@@ -1,6 +1,7 @@
 // utility functions for grid system
-uint3 PositionToGrid(float3 pos, float3 spacing)
+uint3 PositionToGrid(float3 pos, float3 spacing, float3 minCorner)
 {
+	pos -= minCorner;
 	return uint3(pos.x / spacing.x, pos.y / spacing.y, pos.z / spacing.z);
 }
 

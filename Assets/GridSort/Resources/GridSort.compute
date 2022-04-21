@@ -37,8 +37,8 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
     float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
 
-    float3 pos = _ParticleBuffer[id.x].position;
-    int3 grid = (int3)PositionToGrid(pos, float3(spacingX, spacingY, spacingZ));
+    float3 pos = _ParticleBuffer[id.x].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
+    int3 grid = (int3)PositionToGrid(pos, float3(spacingX, spacingY, spacingZ), float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin));
 
     float gxMin = grid.x * spacingX;
     float gxMax = grid.x * spacingX + spacingX;
@@ -59,14 +59,14 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
         {
             for (int x = max(grid.x - leftStep, 0); x <= min(grid.x + rightStep, _GridNumX - 1); x++)
             {
-                //if (!Intersect(_Range, pos, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY)) continue;
+                if (!Intersect(_Range, pos, x * spacingX, (x + 1) * spacingX, (y + 1) * spacingY, y * spacingY, z * spacingZ, (z+1) * spacingZ)) continue;
                 int gid = GridToGridID(uint3(x, y, z), _GridNumX, _GridNumY);
                 int start = _GridTable[gid].x;
                 int end = _GridTable[gid].y;
                 for (int i = start; i <= end; i++)
                 {
-                    Data p = _ParticleBuffer[i];
-                    if (length(p.position - pos) <= _Range)
+                    float3 pPos = _ParticleBuffer[i].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
+                    if (length(pPos - pos) <= _Range)
                         _ParticleBuffer[i].color = float3(0, 0, 1);
                 }
             }
@@ -101,7 +101,7 @@ void MakeParticleGridPair(uint3 id : SV_DispatchThreadID)
     float spacingY = (_BoundaryYMax - _BoundaryYMin) / (float)_GridNumY;
     float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
 
-    uint3 grid = PositionToGrid(p.position, float3(spacingX, spacingY, spacingZ));
+    uint3 grid = PositionToGrid(p.position, float3(spacingX, spacingY, spacingZ), float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin));
     uint gridID = GridToGridID(grid, _GridNumX, _GridNumY);
     _ParticleGridPair[id.x] = uint2(gridID, id.x);
 }

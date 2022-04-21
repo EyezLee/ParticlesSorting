@@ -169,8 +169,10 @@ public class GridSortHelper<T>
                     float width = (gridConfig.boundaryXMax - gridConfig.boundaryXMin) / (float)gridConfig.gridNumX;
                     float height = (gridConfig.boundaryYMax - gridConfig.boundaryYMin) / (float)gridConfig.gridNumY;
                     float depth = (gridConfig.boundaryZMax - gridConfig.boundaryZMin) / (float)gridConfig.gridNumZ;
-                    Gizmos.DrawWireCube(new Vector3(i * width + width * 0.5f, j * height + height * 0.5f, k * depth + depth * 0.5f), 
-                        new Vector3(width, height, depth));
+                    Vector3 center = new Vector3(gridConfig.boundaryXMin + i * width + width * 0.5f,
+                                                 gridConfig.boundaryYMin + j * height + height * 0.5f,
+                                                 gridConfig.boundaryZMin + k * depth + depth * 0.5f);
+                    Gizmos.DrawWireCube(center, new Vector3(width, height, depth));
                 }
             }
         }
