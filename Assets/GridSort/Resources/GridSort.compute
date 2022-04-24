@@ -38,7 +38,7 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
     float spacingZ = (_BoundaryZMax - _BoundaryZMin) / (float)_GridNumZ;
 
     float3 pos = _ParticleBuffer[id.x].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
-    int3 grid = (int3)PositionToGrid(pos, float3(spacingX, spacingY, spacingZ), float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin));
+    int3 grid = (int3) PositionToGrid(_ParticleBuffer[id.x].position, float3(spacingX, spacingY, spacingZ), float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin));
 
     float gxMin = grid.x * spacingX;
     float gxMax = grid.x * spacingX + spacingX;
@@ -81,16 +81,23 @@ void NeighborDebug(uint3 id : SV_DispatchThreadID)
                 int gid = GridToGridID(uint3(x, y, z), _GridNumX, _GridNumY);
                 int start = _GridTable[gid].x;
                 int end = _GridTable[gid].y;
-                if (gid == GridToGridID(grid, _GridNumX, _GridNumY))
+                for (int i = start; i <= end; i++)
                 {
-                    for (int i = start; i <= end; i++)
+                    float3 pPos = _ParticleBuffer[i].position - float3(_BoundaryXMin, _BoundaryYMin, _BoundaryZMin);
+
+                    if (length(pPos - pos) <= _Range)
                         _ParticleBuffer[i].color = float3(0, 0, 1);
                 }
-                else
-                {
-                    for (int i = start; i <= end; i++)
-                        _ParticleBuffer[i].color = float3(1, 0, 0);
-                }
+                //if (gid == GridToGridID(grid, _GridNumX, _GridNumY))
+                //{
+                //    for (int i = start; i <= end; i++)
+                //        _ParticleBuffer[i].color = float3(0, 0, 1);
+                //}
+                //else
+                //{
+                //    for (int i = start; i <= end; i++)
+                //        _ParticleBuffer[i].color = float3(1, 0, 0);
+                //}
             }
         }
     }

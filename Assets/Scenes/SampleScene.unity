@@ -257,15 +257,16 @@ MonoBehaviour:
   shader: {fileID: 4800000, guid: 11e8e44194170da48bb7983e7672d4da, type: 3}
   targetIndex: 301
   neighborRange: 1
-  boundaryXMin: 0
-  boundaryXMax: 10
-  boundaryYMin: 0
-  boundaryYMax: 10
-  boundaryZMin: 0
-  boundaryZMax: 5
-  gridNumX: 10
-  gridNumY: 10
-  gridNumZ: 10
+  gridConfig:
+    boundaryXMin: 0
+    boundaryXMax: 10
+    boundaryYMin: 0
+    boundaryYMax: 10
+    boundaryZMin: 0
+    boundaryZMax: 5
+    gridNumX: 10
+    gridNumY: 10
+    gridNumZ: 5
 --- !u!1 &2134516144
 GameObject:
   m_ObjectHideFlags: 0
