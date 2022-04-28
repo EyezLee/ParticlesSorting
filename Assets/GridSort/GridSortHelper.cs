@@ -3,6 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Runtime.InteropServices;
 
+public enum NeighborMode
+{
+    NEAREST_RADIUS,
+    THREEBYTHREE_BLOCK
+}
 
 [System.Serializable]
 public struct GridConfig
@@ -126,12 +131,13 @@ public class GridSortHelper<T>
         cs.Dispatch(debugKernel, particleDispatchGroupX, 1, 1);
     }
 
-    public void NeighborRangeDebug(ComputeBuffer particleBuff, int index, float neighborRange)
+    public void NeighborRangeDebug(ComputeBuffer particleBuff, int index, float neighborRange, NeighborMode mode)
     {
         int neighborDebug = cs.FindKernel("NeighborDebug");
         SetGridConfig();
         cs.SetInt("_ParticleNum", particleBuff.count);
         cs.SetInt("_TargetIndex", index);
+        cs.SetInt("_NeighborMode", (int)mode);
         cs.SetFloat("_Range", neighborRange);
         cs.SetBuffer(neighborDebug, "_GridTable", gridTableBuffer);
         cs.SetBuffer(neighborDebug, "_ParticleBuffer", particleBuff);
