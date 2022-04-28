@@ -47,31 +47,31 @@ public class GridSortHelper<T>
     ComputeBuffer gridTableBuffer;
     GridConfig gridConfig;
 
-    int particleNum;
-    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / BitonicSort.BITONIC_BLOCK_SIZE); } }
+    PARTICLE_NUM particleNum;
+    int particleDispatchGroupX { get { return Mathf.CeilToInt((int)particleNum / BitonicSort.BITONIC_BLOCK_SIZE); } }
 
-    public GridSortHelper(int particleNumber, GridConfig gridConfiguration)
+    public GridSortHelper(PARTICLE_NUM particleNumber, GridConfig gridConfiguration)
     {
         particleNum = particleNumber;
         gridConfig = gridConfiguration;
-        particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(Vector2)));
-        particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(typeof(T)));
+        particleGridPairBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(typeof(Vector2)));
+        particleRearrangedBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(typeof(T)));
         gridTableBuffer = new ComputeBuffer(gridConfig.gridNum, Marshal.SizeOf(typeof(Vector2)));
     }
 
-    void CheckConfigUpdates(int _particleNum, GridConfig gridConfiguration)
+    void CheckConfigUpdates(PARTICLE_NUM _particleNum, GridConfig gridConfiguration)
     {
         if (particleNum != _particleNum) particleNum = _particleNum;
         gridConfig.UpdateGrid(gridConfiguration);
-        if (particleGridPairBuffer.count != particleNum)
+        if (particleGridPairBuffer.count != (int)particleNum)
         {
             particleGridPairBuffer?.Release();
-            particleGridPairBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
+            particleGridPairBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(new Vector2()));
         }
-        if (particleRearrangedBuffer.count != particleNum)
+        if (particleRearrangedBuffer.count != (int)particleNum)
         {
             particleRearrangedBuffer?.Release();
-            particleRearrangedBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
+            particleRearrangedBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(new Vector2()));
         }
         if(gridTableBuffer.count != gridConfig.gridNum)
         {
@@ -83,7 +83,7 @@ public class GridSortHelper<T>
     public void Sort(ref ComputeBuffer particleBuff, GridConfig gridConfiguration)
     {
         // check for updates 
-        CheckConfigUpdates(particleBuff.count, gridConfiguration);
+        CheckConfigUpdates((PARTICLE_NUM)particleBuff.count, gridConfiguration);
 
         // make <particle, gridID> pair
         int particleGridPairKernel = cs.FindKernel("MakeParticleGridPair");
@@ -93,7 +93,7 @@ public class GridSortHelper<T>
         cs.Dispatch(particleGridPairKernel, particleDispatchGroupX, 1, 1);
 
         // sort 
-        ComputeBuffer tempBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Vector2()));
+        ComputeBuffer tempBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(new Vector2()));
         BitonicSort.Sort(particleGridPairBuffer, tempBuffer);
         tempBuffer?.Release();
 

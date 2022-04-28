@@ -12,7 +12,7 @@ struct Particle
 public class GPUParticleManager : MonoBehaviour
 {
     [SerializeField] ComputeShader cs;
-    [SerializeField] int particleNum = 8;
+    [SerializeField] PARTICLE_NUM particleNum;
     [SerializeField] Mesh prefab;
     [SerializeField] Shader shader;
     [SerializeField] int targetIndex = 0;
@@ -28,7 +28,7 @@ public class GPUParticleManager : MonoBehaviour
 
     GridSortHelper<Particle> gridSortHelper;
 
-    int particleDispatchGroupX { get { return Mathf.CeilToInt(particleNum / 512.0f); } }
+    int particleDispatchGroupX { get { return Mathf.CeilToInt((int)particleNum / 512.0f); } }
     Material material;
 
     // initialize
@@ -36,8 +36,8 @@ public class GPUParticleManager : MonoBehaviour
     {
         gridSortHelper = new GridSortHelper<Particle>(particleNum, gridConfig);
 
-        initializeKernel = cs.FindKernel("Initialize");
-        particleBuffer = new ComputeBuffer(particleNum, Marshal.SizeOf(new Particle()));
+        initializeKernel = cs.FindKernel("Reset");
+        particleBuffer = new ComputeBuffer((int)particleNum, Marshal.SizeOf(new Particle()));
         cs.SetFloat("_BoundaryXMin", gridConfig.boundaryXMin);
         cs.SetFloat("_BoundaryXMax", gridConfig.boundaryXMax);
         cs.SetFloat("_BoundaryYMin", gridConfig.boundaryYMin);
