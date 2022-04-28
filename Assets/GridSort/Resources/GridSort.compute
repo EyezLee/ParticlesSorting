@@ -152,5 +152,6 @@ void Debug(uint3 id : SV_DispatchThreadID)
     p.color = float3(grid.x/(float)_GridNumX, grid.y/(float)_GridNumY, grid.z/(float)_GridNumZ);
 
     _ParticleBuffer[id.x] = p;
+
 }
 

@@ -1,7 +1,7 @@
 #include "../../GridSort/Resources/cginc/GridConfig.cginc"
 #include "../../GridSort/Resources/cginc/DataBridge.cginc"
 
-#pragma kernel Initialize
+#pragma kernel Reset
 
 
 float random(float2 uv)
@@ -10,7 +10,7 @@ float random(float2 uv)
 }
 
 [numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
-void Initialize(uint3 id : SV_DispatchThreadID)
+void Reset(uint3 id : SV_DispatchThreadID)
 {
     Particle p = _ParticleBuffer[id.x];
     float spacingX = (_BoundaryXMax - _BoundaryXMin) / (float)_GridNumX;
